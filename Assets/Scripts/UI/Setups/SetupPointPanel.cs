@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -56,9 +53,7 @@ public class SetupPointPanel : MonoBehaviour
 
     private void Awake()
     {
-        setUpsController = transform.parent.GetComponent<SetUpsController>();
         ChangeSetUpPointState(SetUpPointState.AddPoint);
-
         changeAddStateButton.onClick.AddListener(OnChangeAddState);
         changeRemoveStateButton.onClick.AddListener(OnChangeRemoveState);
         removeAllStateButton.onClick.AddListener(OnRemoveAllPoint);
@@ -71,7 +66,6 @@ public class SetupPointPanel : MonoBehaviour
 
     private void OnRemoveAllPoint()
     {
-        Animator
-        enviromentController.RemoveAllPoint();
+        enviromentController.RemoveAllSolidLine();
     }
 }

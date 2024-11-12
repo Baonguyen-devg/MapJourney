@@ -40,4 +40,14 @@ public class Point : MonoBehaviour
         transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.Linear)
            .OnComplete(() => gameObject.SetActive(false));
     }
+
+    public void OnSelected()
+    {
+        transform.DOScale(Vector3.one * 2.5f, 0.2f).SetEase(Ease.Linear);
+    }
+
+    public void OnUnselected()
+    {
+        transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
+    }
 }
