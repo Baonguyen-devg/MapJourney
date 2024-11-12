@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,5 +28,16 @@ public class Point : MonoBehaviour
         this.zCoordinate = zCoordinate;
         this.pointType = pointType;
     }
-    
+
+    public void OnEnable()
+    {
+        transform.localScale = Vector3.zero;
+        transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
+    }
+
+    public void DisAtive()
+    {
+        transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.Linear)
+           .OnComplete(() => gameObject.SetActive(false));
+    }
 }

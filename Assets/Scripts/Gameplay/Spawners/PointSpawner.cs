@@ -8,4 +8,10 @@ public class PointSpawner : ObjectPooling<Point, PointType>
     {
         return (component.PointType == matchType);
     }
+
+    public override void Despawn(Point component)
+    {
+        component.DisAtive();
+        components.Add(component);
+    }
 }
