@@ -28,31 +28,41 @@ public class SetUpsController : MonoBehaviour
         ChangeSetupState((SetupState)nextIndex);
     }
 
+    public bool IsSetupPoint() => setupState == SetupState.SetupPoints;
+    public bool IsSetupSolidLine() => setupState == SetupState.SetupSolidLine;
+    public bool IsSetupRoad() => setupState == SetupState.SetupRoad;
+    public bool IsSetupCarPosition() => setupState == SetupState.SetupCarPosition;
+
     public SetupState SetupState => setupState;
     public void ChangeSetupState(SetupState setupState)
     {
+        DisactiveAllPanel();
         this.setupState = setupState;
         switch (setupState)
         {
             case SetupState.SetupPoints:
+                setupPointPanel.gameObject.SetActive(true);
                 stateText.text = "Setup points";
                 break;
 
-            case SetupState.SetupSolidLine: 
+            case SetupState.SetupSolidLine:
+                setupSolidLinePanel.gameObject.SetActive(true);
                 stateText.text = "Setup solid lines";
                 break;
-            
-            case SetupState.SetupRoad: 
+
+            case SetupState.SetupRoad:
+                setupRoadPanel.gameObject.SetActive(true);
                 stateText.text = "Setup roads";
                 break;
-            
-            case SetupState.SetupCarPosition: 
+
+            case SetupState.SetupCarPosition:
                 stateText.text = "Setup car position";
                 break;
-        
+
             default: break;
         }
     }
+
     #endregion
 
     [SerializeField] private SetupPointPanel setupPointPanel;
@@ -68,5 +78,12 @@ public class SetUpsController : MonoBehaviour
     private void Awake()
     {
         ChangeSetupState(SetupState.SetupPoints);
+    }
+
+    private void DisactiveAllPanel()
+    {
+        setupPointPanel.gameObject.SetActive(false);
+        setupSolidLinePanel.gameObject.SetActive(false);
+        setupRoadPanel.gameObject.SetActive(false);
     }
 }
