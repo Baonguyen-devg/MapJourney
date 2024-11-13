@@ -5,10 +5,13 @@ using UnityEngine;
 public enum SolidLineType
 {
     Default,
+    BezierSolidLine,
 }
 
 public class SolidLine : MonoBehaviour
 {
+    private const float WIDTH_DEFAULT = 0.5f;
+
     [SerializeField] private LineRenderer lineRenderer;
     public LineRenderer LineRenderer => lineRenderer;
 
@@ -22,14 +25,24 @@ public class SolidLine : MonoBehaviour
 
     public void Init(Vector3 startPosition, Vector3 endPosition, SolidLineType solidLineType = default)
     {
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
+        SetPosition(startPosition, endPosition);
         this.solidLineType = solidLineType;
 
         lineRenderer.positionCount = 2;
         lineRenderer.SetPosition(0, startPosition);
         lineRenderer.SetPosition(1, endPosition);
-        lineRenderer.startWidth = 0.5f;
-        lineRenderer.endWidth = 0.5f;
+        SetLineWidth();
+    }
+
+    public void SetPosition(Vector3 startPosition, Vector3 endPosition)
+    {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+    }
+
+    public void SetLineWidth(float widht = WIDTH_DEFAULT)
+    {
+        lineRenderer.startWidth = widht;
+        lineRenderer.endWidth = widht;
     }
 }
