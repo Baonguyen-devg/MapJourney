@@ -9,8 +9,9 @@ public enum SetupState
 {
     SetupPoints = 0,
     SetupSolidLine = 1,
-    SetupRoad = 2,
-    SetupCarPosition = 3,
+    SetupJourneyEndpoints = 2,
+    SetupRoad = 3,
+    SetupCarPosition = 4,
 }
 
 public class SetUpsController : MonoBehaviour
@@ -30,6 +31,7 @@ public class SetUpsController : MonoBehaviour
 
     public bool IsSetupPoint() => setupState == SetupState.SetupPoints;
     public bool IsSetupSolidLine() => setupState == SetupState.SetupSolidLine;
+    public bool IsSetupJourneyEndpoints() => setupState == SetupState.SetupJourneyEndpoints;
     public bool IsSetupRoad() => setupState == SetupState.SetupRoad;
     public bool IsSetupCarPosition() => setupState == SetupState.SetupCarPosition;
 
@@ -50,6 +52,11 @@ public class SetUpsController : MonoBehaviour
                 stateText.text = "Setup solid lines";
                 break;
 
+            case SetupState.SetupJourneyEndpoints:
+                setupJourneyEndpointsPanel.gameObject.SetActive(true);
+                stateText.text = "Setup journey end points";
+                break;
+
             case SetupState.SetupRoad:
                 setupRoadPanel.gameObject.SetActive(true);
                 stateText.text = "Setup roads";
@@ -67,10 +74,12 @@ public class SetUpsController : MonoBehaviour
 
     [SerializeField] private SetupPointPanel setupPointPanel;
     [SerializeField] private SetupSolidLinePanel setupSolidLinePanel;
+    [SerializeField] private SetupJourneyEndpoints setupJourneyEndpointsPanel;
     [SerializeField] private SetupRoadPanel setupRoadPanel;
 
     public SetupPointPanel SetUpPointPanel => setupPointPanel;
     public SetupSolidLinePanel SetupSolidLinePanel => setupSolidLinePanel;
+    public SetupJourneyEndpoints SetupJourneyEndpoints => setupJourneyEndpointsPanel;
     public SetupRoadPanel SetupRoadPanel => setupRoadPanel;
 
     [SerializeField] private TextMeshProUGUI stateText;
@@ -84,6 +93,7 @@ public class SetUpsController : MonoBehaviour
     {
         setupPointPanel.gameObject.SetActive(false);
         setupSolidLinePanel.gameObject.SetActive(false);
+        setupJourneyEndpointsPanel.gameObject.SetActive(false);
         setupRoadPanel.gameObject.SetActive(false);
     }
 }

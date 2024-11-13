@@ -64,7 +64,11 @@ public class SetupSolidLinePanel : MonoBehaviour
 
     private void OnChangeAddState() => ChangeSetUpSolidLineState(SetUpSolidLineState.AddSolidLine);
     private void OnChangeRemoveState() => ChangeSetUpSolidLineState(SetUpSolidLineState.RemoveSolidLine);
-    private void OnChangeSetupState() => setUpsController.ChangeNextState();
+    private void OnChangeSetupState()
+    {
+        enviromentController.ResetPoints();
+        setUpsController.ChangeNextState();
+    }
 
     private void OnRemoveAllSolidLine()
     {

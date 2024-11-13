@@ -124,3 +124,4 @@ MonoBehaviour:
   yCoordinate: 0
   zCoordinate: 0
   pointType: 0
+  pointRenderer: {fileID: 3696993131285096999}

@@ -11,7 +11,7 @@ public class PointSpawner : ObjectPooling<Point, PointType>
 
     public override void Despawn(Point component)
     {
-        component.DisAtive();
+        component.DisActive();
         components.Add(component);
     }
 }
