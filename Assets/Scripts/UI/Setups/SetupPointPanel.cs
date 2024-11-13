@@ -66,6 +66,6 @@ public class SetupPointPanel : MonoBehaviour
 
     private void OnRemoveAllPoint()
     {
-        enviromentController.RemoveAllSolidLine();
+        enviromentController.RemoveAllPoint();
     }
 }

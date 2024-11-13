@@ -1,19 +1,25 @@
-﻿using System.Collections;
+﻿using Dreamteck.Splines;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class EnviromentController : MonoBehaviour
 {
+    private readonly Vector3 VECTOR3_INF = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+
     [SerializeField] private PointSpawner pointSpawner;
     [SerializeField] private SolidLineSpawner solidLineSpawner;
+    [SerializeField] private SplineComputer roadSplineComputer;
 
     [SerializeField] private LayerMask groundLayerMask;
     [SerializeField] private SetUpsController setUpsController;
 
     [SerializeField] private List<Point> points = new List<Point>();
     [SerializeField] private List<SolidLine> solidLines = new List<SolidLine>();
+    [SerializeField] private List<SolidLine> bezierLines = new List<SolidLine>();
+
+    [Header("Setting for bezier solid line"), Space(6)]
+    [SerializeField] private int segmentCount = 20;
+    [SerializeField] private float offsetDistance = 0.4f;
 
     public PointSpawner PointSpawner => pointSpawner;
     public SolidLineSpawner SolidLineSpawner => solidLineSpawner;
@@ -21,10 +27,13 @@ public class EnviromentController : MonoBehaviour
     private Point clickedPoint;
     private Point targetPoint;
 
+    private Dictionary<SolidLine, List<SolidLine>> lineToBezierMap = new Dictionary<SolidLine, List<SolidLine>>();
+
     private void Awake()
     {
         InputManager.OnLeftMouseDown += SetUpPoint;
         InputManager.OnLeftMouseDown += SetUpSolidLine;
+        InputManager.OnRightMouseDown += ResetPoints;
     }
     
     private void SetUpPoint()
@@ -39,6 +48,15 @@ public class EnviromentController : MonoBehaviour
         if (!setUpsController.IsSetupSolidLine()) return;
         if (setUpsController.SetupSolidLinePanel.IsAddSolidLineState()) ConnectPoints();
         if (setUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) RemoveLine();
+    }
+    
+    private void ResetPoints()
+    {
+        if (!setUpsController.IsSetupSolidLine()) return;
+        if (clickedPoint != null) clickedPoint.OnUnselected();
+        if (targetPoint != null) targetPoint.OnUnselected();
+        clickedPoint = null;
+        targetPoint = null;
     }
 
     private void AddPoint()
@@ -68,10 +86,29 @@ public class EnviromentController : MonoBehaviour
 
             if (closestPoint != null)
             {
-                points.Remove(closestPoint);
-                pointSpawner.Despawn(closestPoint);
+                RemovePointWithSolidLines(closestPoint);
             }
         }
+    }
+
+    private void RemovePointWithSolidLines(Point pointToRemove)
+    {
+        List<SolidLine> solidLinesToRemove = new List<SolidLine>();
+        foreach (SolidLine solidLine in solidLines)
+        {
+            if (solidLine.StartPosition == pointToRemove.transform.position ||
+                solidLine.EndPosition == pointToRemove.transform.position)
+            {
+                solidLinesToRemove.Add(solidLine);
+            }
+        }
+
+        foreach (SolidLine solidLine in solidLinesToRemove)
+        {
+            RemoveSolidLineWithBezier(solidLine);
+        }
+        pointSpawner.Despawn(pointToRemove);
+        points.Remove(pointToRemove);
     }
 
     private void RemoveLine()
@@ -97,8 +134,7 @@ public class EnviromentController : MonoBehaviour
 
             if (closestLine != null && minDistance < 1.0f)
             {
-                SolidLineSpawner.Despawn(closestLine);
-                solidLines.Remove(closestLine);
+                RemoveSolidLineWithBezier(closestLine);
             }
         }
     }
@@ -125,6 +161,24 @@ public class EnviromentController : MonoBehaviour
         return Vector3.Distance(point, projectionPoint);
     }
 
+    public void ConverLineToSpline()
+    {
+        roadSplineComputer.gameObject.SetActive(true);
+        roadSplineComputer.SetPoints(new SplinePoint[0]);
+
+        List<SplinePoint> splinePoints = new List<SplinePoint>();
+        foreach (SolidLine solidLine in solidLines)
+        {
+            float segmentLength = Vector3.Distance(solidLine.StartPosition, solidLine.EndPosition);
+
+            Vector3 start = solidLine.StartPosition + (solidLine.EndPosition - solidLine.StartPosition).normalized * 0.5f;
+            Vector3 end = solidLine.EndPosition - (solidLine.EndPosition - solidLine.StartPosition).normalized * 0.5f;
+
+            splinePoints.Add(new SplinePoint(start));
+            splinePoints.Add(new SplinePoint(end));
+        }
+        roadSplineComputer.SetPoints(splinePoints.ToArray());
+    }
 
     private void ConnectPoints()
     {
@@ -176,12 +230,18 @@ public class EnviromentController : MonoBehaviour
                     SolidLine solidLine = solidLineSpawner.Spawn(SolidLineType.Default);
                     solidLine.Init(clickedPoint.transform.position, targetPoint.transform.position);
                     solidLines.Add(solidLine);
+
+                    foreach (SolidLine existingLine in solidLines)
+                    {
+                        if (existingLine == solidLine) continue;
+                        CreateBezierLine(solidLine, existingLine);
+                    }
                 }
 
                 clickedPoint.OnUnselected();
-                targetPoint.OnUnselected();
-                clickedPoint = null;
+                clickedPoint = targetPoint;
                 targetPoint = null;
+                clickedPoint.OnSelected();
             }
         }
     }
@@ -207,8 +267,7 @@ public class EnviromentController : MonoBehaviour
     {
         for (int i = points.Count - 1; i >= 0; i--)
         {
-            pointSpawner.Despawn(points[i]);
-            points.Remove(points[i]);
+            RemovePointWithSolidLines(points[i]);
         }
     }
 
@@ -216,8 +275,89 @@ public class EnviromentController : MonoBehaviour
     {
         for (int i = solidLines.Count - 1; i >= 0; i--)
         {
-            SolidLineSpawner.Despawn(solidLines[i]);
-            solidLines.Remove(solidLines[i]);
+            RemoveSolidLineWithBezier(solidLines[i]);
         }
+    }
+
+    void CreateBezierLine(SolidLine solidLine1, SolidLine solidLine2)
+    {
+        Vector3 sharedPoint = FindSharedPoint(solidLine1, solidLine2);
+        if (sharedPoint == VECTOR3_INF)
+        {
+            Debug.Log($"[EnviromentController] CreateBezierLine | Don't have sharepoint");
+            return;
+        }
+
+        Vector3 startPointOriginal = (solidLine1.StartPosition == sharedPoint) ? solidLine1.EndPosition : solidLine1.StartPosition;
+        Vector3 endPointOriginal = (solidLine2.StartPosition == sharedPoint) ? solidLine2.EndPosition : solidLine2.StartPosition;
+
+        Vector3 startPoint = sharedPoint - (sharedPoint - startPointOriginal) * offsetDistance;
+        Vector3 endPoint = sharedPoint + (endPointOriginal - sharedPoint) * offsetDistance;
+
+        SolidLine bezierSolidLine = SolidLineSpawner.Spawn(SolidLineType.BezierSolidLine);
+        bezierSolidLine.LineRenderer.positionCount = segmentCount + 1;
+        bezierSolidLine.SetPosition(startPointOriginal, endPointOriginal);
+        bezierSolidLine.SetLineWidth(0.3f);
+
+        for (int i = 0; i <= segmentCount; i++)
+        {
+            float interpolationFactor = i / (float)segmentCount;
+            Vector3 bezierPoint = CalculateQuadraticBezierPoint(interpolationFactor, startPoint, sharedPoint, endPoint);
+            bezierSolidLine.LineRenderer.SetPosition(i, bezierPoint);
+        }
+
+        if (!lineToBezierMap.ContainsKey(solidLine1))
+        {
+            lineToBezierMap[solidLine1] = new List<SolidLine>();
+        }
+        if (!lineToBezierMap.ContainsKey(solidLine2))
+        {
+            lineToBezierMap[solidLine2] = new List<SolidLine>();
+        }
+        lineToBezierMap[solidLine1].Add(bezierSolidLine);
+        lineToBezierMap[solidLine2].Add(bezierSolidLine);
+    }
+
+    private void RemoveSolidLineWithBezier(SolidLine solidLineToRemove)
+    {
+        if (lineToBezierMap.TryGetValue(solidLineToRemove, out List<SolidLine> relatedBeziers))
+        {
+            List<SolidLine> bezierLinesToRemove = new List<SolidLine>(relatedBeziers);
+            foreach (SolidLine bezierLine in bezierLinesToRemove)
+            {
+                solidLineSpawner.Despawn(bezierLine);
+                bezierLines.Remove(bezierLine);
+
+                foreach (var entry in lineToBezierMap)
+                {
+                    entry.Value.Remove(bezierLine);
+                }
+            }
+            lineToBezierMap.Remove(solidLineToRemove);
+        }
+        solidLineSpawner.Despawn(solidLineToRemove);
+        solidLines.Remove(solidLineToRemove);
+    }
+
+    public Vector3 FindSharedPoint(SolidLine line1, SolidLine line2)
+    {
+        if (line1.StartPosition == line2.StartPosition || line1.StartPosition == line2.EndPosition)
+        {
+            Debug.Log($"[EnviromentController] FindSharedPoint | Sharedpoint: {line1.StartPosition}");
+            return line1.StartPosition;
+        }
+        else if (line1.EndPosition == line2.StartPosition || line1.EndPosition == line2.EndPosition)
+        {
+            Debug.Log($"[EnviromentController] FindSharedPoint | Sharedpoint: {line1.EndPosition}");
+            return line1.EndPosition;
+        }
+        return VECTOR3_INF;
+    }
+
+    Vector3 CalculateQuadraticBezierPoint(float interpolationFactor, Vector3 point0, Vector3 point1, Vector3 point2)
+    {
+        float u = 1 - interpolationFactor;
+        return u * u * point0 + 2 * u * interpolationFactor * point1 
+             + interpolationFactor * interpolationFactor * point2;
     }
 }
