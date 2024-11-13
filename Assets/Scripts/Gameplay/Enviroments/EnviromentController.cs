@@ -1,5 +1,6 @@
 ﻿using Dreamteck.Splines;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class EnviromentController : MonoBehaviour
@@ -27,12 +28,16 @@ public class EnviromentController : MonoBehaviour
     private Point clickedPoint;
     private Point targetPoint;
 
+    private Point startJourneyPoint;
+    private Point endJourneyPoint;
+
     private Dictionary<SolidLine, List<SolidLine>> lineToBezierMap = new Dictionary<SolidLine, List<SolidLine>>();
 
     private void Awake()
     {
         InputManager.OnLeftMouseDown += SetUpPoint;
         InputManager.OnLeftMouseDown += SetUpSolidLine;
+        InputManager.OnLeftMouseDown += SetUpJourneyEndPoints;
         InputManager.OnRightMouseDown += ResetPoints;
     }
     
@@ -49,8 +54,49 @@ public class EnviromentController : MonoBehaviour
         if (setUpsController.SetupSolidLinePanel.IsAddSolidLineState()) ConnectPoints();
         if (setUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) RemoveLine();
     }
-    
-    private void ResetPoints()
+
+    private void SetUpJourneyEndPoints()
+    {
+        if (!setUpsController.IsSetupJourneyEndpoints()) return;
+        if (setUpsController.SetupJourneyEndpoints.IsSetStartPointState()) SetStartPoint();
+        if (setUpsController.SetupJourneyEndpoints.IsSetEndPointState()) SetEndPoint();
+    }
+
+    private void SetStartPoint()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(InputManager.Instance.GetMousePosition());
+        RaycastHit raycastHit;
+
+        if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity, groundLayerMask))
+        {
+            Vector3 hitPosition = raycastHit.point;
+            Point closestPoint = FindClosestPoint(hitPosition);
+            if (closestPoint == null) return;
+
+            if (startJourneyPoint != null) startJourneyPoint.OnNormalPoint();
+            closestPoint.OnJourneyStartPoint();
+            startJourneyPoint = closestPoint;
+        }
+    }
+
+    private void SetEndPoint()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(InputManager.Instance.GetMousePosition());
+        RaycastHit raycastHit;
+
+        if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity, groundLayerMask))
+        {
+            Vector3 hitPosition = raycastHit.point;
+            Point closestPoint = FindClosestPoint(hitPosition);
+            if (closestPoint == null) return;
+
+            if (endJourneyPoint != null) endJourneyPoint.OnNormalPoint();
+            closestPoint.OnJourneyEndPoint();
+            endJourneyPoint = closestPoint;
+        }
+    }
+
+    public void ResetPoints()
     {
         if (!setUpsController.IsSetupSolidLine()) return;
         if (clickedPoint != null) clickedPoint.OnUnselected();

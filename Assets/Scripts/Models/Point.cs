@@ -19,7 +19,10 @@ public class Point : MonoBehaviour
     public float ZCoordinate => zCoordinate;
 
     [SerializeField] private PointType pointType = PointType.Default;
+    [SerializeField] private Renderer pointRenderer;
+
     public PointType PointType => pointType;
+    public Renderer PointRenderer => pointRenderer;
 
     public void Init(float xCoordinate, float yCoordinate, float zCoordinate, PointType pointType = default)
     {
@@ -35,19 +38,16 @@ public class Point : MonoBehaviour
         transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
     }
 
-    public void DisAtive()
+    public void DisActive()
     {
         transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.Linear)
            .OnComplete(() => gameObject.SetActive(false));
     }
 
-    public void OnSelected()
-    {
-        transform.DOScale(Vector3.one * 2.5f, 0.2f).SetEase(Ease.Linear);
-    }
+    public void OnSelected() => transform.DOScale(Vector3.one * 2.5f, 0.2f).SetEase(Ease.Linear);
+    public void OnUnselected() => transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
 
-    public void OnUnselected()
-    {
-        transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
-    }
+    public void OnNormalPoint() => pointRenderer.material.DOColor(Color.white, 0.2f);
+    public void OnJourneyStartPoint() => pointRenderer.material.DOColor(Color.red, 0.2f);
+    public void OnJourneyEndPoint() => pointRenderer.material.DOColor(Color.green, 0.2f);
 }
