@@ -1,39 +1,37 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum SetUpSolidLinesMode
+public enum SetUpPointsMode
 {
     None,
-    AddSolidLineMode,
-    RemoveSolidLineMode,
+    AddPointMode,
+    RemovePointMode,
 }
 
-public class SetupSolidLinePanel : SetupPanel
+public class SetupPointsPanel : SetupPanel
 {
-    #region Setup SolidLine Mode
+    #region Setup points mode
     public static event Action OnChangedAddMode;
     public static event Action OnChangedRemoveMode;
 
-    public bool IsAddSolidLineState() => setUpSolidsMode == SetUpSolidLinesMode.AddSolidLineMode;
-    public bool IsRemoveSolidLineState() => setUpSolidsMode == SetUpSolidLinesMode.RemoveSolidLineMode;
+    public bool IsAddPointModeState() => setUpPointsMode == SetUpPointsMode.AddPointMode;
+    public bool IsRemovePointModeState() => setUpPointsMode == SetUpPointsMode.RemovePointMode;
 
-    public SetUpSolidLinesMode SetUpSolidState => setUpSolidsMode;
-    public void ChangeSetUpSolidLinesMode(SetUpSolidLinesMode setUpSolidsMode)
+    public SetUpPointsMode SetUpPointState => setUpPointsMode;
+    public void ChangeSetUpPointsMode(SetUpPointsMode setUpPointsMode)
     {
-        Debug.Log($"[SetupSolidLinePanel] ChangeSetUpSolidLinesMode | {setUpSolidsMode}");
-        this.setUpSolidsMode = setUpSolidsMode;
+        Debug.Log($"[SetupPointPanel] ChangeSetUpPointsMode | {setUpPointsMode}");
+        this.setUpPointsMode = setUpPointsMode;
 
-        switch (this.setUpSolidsMode)
+        switch (this.setUpPointsMode)
         {
-            case SetUpSolidLinesMode.AddSolidLineMode:
+            case SetUpPointsMode.AddPointMode:
                 OnChangedAddMode?.Invoke();
                 break;
 
-            case SetUpSolidLinesMode.RemoveSolidLineMode:
+            case SetUpPointsMode.RemovePointMode:
                 OnChangedRemoveMode?.Invoke();
                 break;
         }
@@ -43,25 +41,25 @@ public class SetupSolidLinePanel : SetupPanel
     [Header("UI Compoents"), Space(6)]
     [SerializeField] private UISwitcher.UISwitcher changeAddModeSwitcher;
     [SerializeField] private UISwitcher.UISwitcher changeRemoveModeSwitcher;
-    [SerializeField] private Button removeAllSolidLineButton;
+    [SerializeField] private Button removeAllPointButton;
     [SerializeField] private Button turnOnModeButton;
 
     [Header("Other components"), Space(6)]
-    [SerializeField] private SetUpSolidLinesMode setUpSolidsMode = SetUpSolidLinesMode.AddSolidLineMode;
+    [SerializeField] private SetUpPointsMode setUpPointsMode = SetUpPointsMode.AddPointMode;
     [SerializeField] private EnviromentController enviromentController;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
     {
         RegisterEvents();
-        ChangeSetUpSolidLinesMode(SetUpSolidLinesMode.AddSolidLineMode);
+        ChangeSetUpPointsMode(SetUpPointsMode.AddPointMode);
         changeAddModeSwitcher.SetWithNotify(true);
     }
 
     private void RegisterEvents()
     {
         turnOnModeButton.onClick.AddListener(OnChangeSetUpMode);
-        removeAllSolidLineButton.onClick.AddListener(OnRemoveAllSolidLine);
+        removeAllPointButton.onClick.AddListener(OnRemoveAllPoint);
 
         changeAddModeSwitcher.OnValueChanged += OnChangeAddMode;
         changeRemoveModeSwitcher.OnValueChanged += OnChangeRemoveMode;
@@ -74,32 +72,32 @@ public class SetupSolidLinePanel : SetupPanel
 
     private void UnRegisterEvents()
     {
-        turnOnModeButton.onClick.AddListener(OnChangeSetUpMode);
-        removeAllSolidLineButton.onClick.RemoveListener(OnRemoveAllSolidLine);
-
+        turnOnModeButton.onClick.RemoveListener(OnChangeSetUpMode);
+        removeAllPointButton.onClick.RemoveListener(OnRemoveAllPoint);
+        
         changeAddModeSwitcher.OnValueChanged -= OnChangeAddMode;
         changeRemoveModeSwitcher.OnValueChanged -= OnChangeRemoveMode;
     }
 
     private void OnChangeAddMode(bool isOn)
     {
-        ChangeSetUpSolidLinesMode(SetUpSolidLinesMode.AddSolidLineMode);
+        ChangeSetUpPointsMode(SetUpPointsMode.AddPointMode);
         changeRemoveModeSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnChangeRemoveMode(bool isOn)
     {
-        ChangeSetUpSolidLinesMode(SetUpSolidLinesMode.RemoveSolidLineMode);
+        ChangeSetUpPointsMode(SetUpPointsMode.RemovePointMode);
         changeAddModeSwitcher.SetWithoutNotify(!isOn);
     }
 
-    private void OnRemoveAllSolidLine()
+    private void OnRemoveAllPoint()
     {
-        enviromentController.RemoveAllSolidLine();
+        enviromentController.RemoveAllPoint();
     }
 
     private void OnChangeSetUpMode()
     {
-        setUpsController.ChangeSetupState(SetupState.SetupSolidLines);
+        setUpsController.ChangeSetupState(SetupState.SetupPoints);
     }
 }

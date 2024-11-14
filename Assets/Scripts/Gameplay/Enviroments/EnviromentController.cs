@@ -44,14 +44,14 @@ public class EnviromentController : MonoBehaviour
     
     private void SetUpPoint()
     {
-        if (!setUpsController.IsSetupPoint()) return;
-        if (setUpsController.SetUpPointPanel.IsAddPointState()) AddPoint();
-        if (setUpsController.SetUpPointPanel.IsRemovePointState()) RemovePoint();
+        if (!setUpsController.IsSetupPoints()) return;
+        if (setUpsController.SetUpPointPanel.IsAddPointModeState()) AddPoint();
+        if (setUpsController.SetUpPointPanel.IsRemovePointModeState()) RemovePoint();
     }
 
     private void SetUpSolidLine()
     {
-        if (!setUpsController.IsSetupSolidLine()) return;
+        if (!setUpsController.IsSetupSolidLines()) return;
         if (setUpsController.SetupSolidLinePanel.IsAddSolidLineState()) ConnectPoints();
         if (setUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) RemoveLine();
     }
@@ -105,7 +105,7 @@ public class EnviromentController : MonoBehaviour
 
     public void ResetPoints()
     {
-        if (!setUpsController.IsSetupSolidLine()) return;
+        if (!setUpsController.IsSetupSolidLines()) return;
         if (clickedPoint != null) clickedPoint.OnUnselected();
         if (targetPoint != null) targetPoint.OnUnselected();
         clickedPoint = null;
