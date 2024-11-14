@@ -1,66 +1,102 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum SetupJourneyState
+public enum SetupJourneyPointType
 {
     None,
-    SetStartPoint,
-    SetEndPoint,
+    StartPoint,
+    EndPoint,
 }
 
-public class SetupJourneyEndpoints : MonoBehaviour
+public class SetupJourneyEndpoints: SetupPanel
 {
     #region Setup Journey states
     public static event Action OnChangedSetStartPoint;
     public static event Action OnChangedSetEndPoint;
 
-    [SerializeField] private SetupJourneyState setupJourneyState = SetupJourneyState.SetStartPoint;
+    public bool IsSetStartPointState() => setupJourneyPointType == SetupJourneyPointType.StartPoint;
+    public bool IsSetEndPointState() => setupJourneyPointType == SetupJourneyPointType.EndPoint;
 
-    public bool IsSetStartPointState() => setupJourneyState == SetupJourneyState.SetStartPoint;
-    public bool IsSetEndPointState() => setupJourneyState == SetupJourneyState.SetEndPoint;
-
-    public SetupJourneyState SetupJourneyState => setupJourneyState;
-    public void ChangeSetupJourneyState(SetupJourneyState setupJourneyState)
+    public SetupJourneyPointType SetupJourneyState => setupJourneyPointType;
+    public void ChangeSetupJourneyPointType(SetupJourneyPointType setupJourneyPointType)
     {
-        Debug.Log($"[SetupJourneyEndpoints] ChangeSetupJourneyState | {setupJourneyState}");
-        this.setupJourneyState = setupJourneyState;
+        Debug.Log($"[SetupJourneyEndpoints] ChangeSetupJourneyPointType | {setupJourneyPointType}");
+        this.setupJourneyPointType = setupJourneyPointType;
 
-        switch (this.setupJourneyState)
+        switch (this.setupJourneyPointType)
         {
-            case SetupJourneyState.SetStartPoint:
+            case SetupJourneyPointType.StartPoint:
                 OnChangedSetStartPoint?.Invoke();
-                stateText.text = "Start Point";
                 break;
 
-            case SetupJourneyState.SetEndPoint:
+            case SetupJourneyPointType.EndPoint:
                 OnChangedSetEndPoint?.Invoke();
-                stateText.text = "End Point";
                 break;
         }
     }
     #endregion
 
-    [SerializeField] private Button changeSetStartPointStateButton;
-    [SerializeField] private Button changeSetEndPointStateButton;
-    [SerializeField] private Button finishedButton;
+    [Header("UI Compoents"), Space(6)]
+    [SerializeField] private UISwitcher.UISwitcher changeStartPointSwitcher;
+    [SerializeField] private UISwitcher.UISwitcher changeEndPointSwitcher;
+    [SerializeField] private Button resetAllPointButton;
+    [SerializeField] private Button turnOnModeButton;
 
-    [SerializeField] private TextMeshProUGUI stateText;
-    [SerializeField] private SetUpsController setUpsController;
+    [Header("Other components"), Space(6)]
+    [SerializeField] private SetupJourneyPointType setupJourneyPointType = SetupJourneyPointType.StartPoint;
     [SerializeField] private EnviromentController enviromentController;
+    [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
     {
-        ChangeSetupJourneyState(SetupJourneyState.SetStartPoint);
-        changeSetStartPointStateButton.onClick.AddListener(OnChangedSetStartPointState);
-        changeSetEndPointStateButton.onClick.AddListener(OnChangedSetEndPointState);
-        finishedButton.onClick.AddListener(OnChangeSetupState);
+        RegisterEvents();
+        ChangeSetupJourneyPointType(SetupJourneyPointType.StartPoint);
+        changeStartPointSwitcher.SetWithNotify(true);
     }
 
-    private void OnChangedSetStartPointState() => ChangeSetupJourneyState(SetupJourneyState.SetStartPoint);
-    private void OnChangedSetEndPointState() => ChangeSetupJourneyState(SetupJourneyState.SetEndPoint);
-    private void OnChangeSetupState() => setUpsController.ChangeNextState();
+    private void RegisterEvents()
+    {
+        turnOnModeButton.onClick.AddListener(OnChangeSetUpMode);
+        resetAllPointButton.onClick.AddListener(OnResetAllPoint);
+
+        changeStartPointSwitcher.OnValueChanged += OnChangeStartPoint;
+        changeEndPointSwitcher.OnValueChanged += OnChangeEndPoint;
+    }
+
+    private void OnDestroy()
+    {
+        UnRegisterEvents();
+    }
+
+    private void UnRegisterEvents()
+    {
+        turnOnModeButton.onClick.RemoveListener(OnChangeSetUpMode);
+        resetAllPointButton.onClick.RemoveListener(OnResetAllPoint);
+
+        changeStartPointSwitcher.OnValueChanged -= OnChangeStartPoint;
+        changeEndPointSwitcher.OnValueChanged -= OnChangeEndPoint;
+    }
+
+    private void OnChangeStartPoint(bool isOn)
+    {
+        ChangeSetupJourneyPointType(SetupJourneyPointType.StartPoint);
+        changeEndPointSwitcher.SetWithoutNotify(!isOn);
+    }
+
+    private void OnChangeEndPoint(bool isOn)
+    {
+        ChangeSetupJourneyPointType(SetupJourneyPointType.EndPoint);
+        changeStartPointSwitcher.SetWithoutNotify(!isOn);
+    }
+
+    private void OnResetAllPoint()
+    {
+        enviromentController.ResetPoints();
+    }
+
+    private void OnChangeSetUpMode()
+    {
+        setUpsController.ChangeSetupState(SetupState.SetupJourneyEndpoints);
+    }
 }
