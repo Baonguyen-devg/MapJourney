@@ -10,6 +10,7 @@ public class EnviromentController : MonoBehaviour
     [SerializeField] private PointSpawner pointSpawner;
     [SerializeField] private SolidLineSpawner solidLineSpawner;
     [SerializeField] private SplineComputer roadSplineComputer;
+    [SerializeField] private CarMoving carMove;
 
     [SerializeField] private LayerMask groundLayerMask;
     [SerializeField] private SetUpsController setUpsController;
@@ -94,6 +95,12 @@ public class EnviromentController : MonoBehaviour
             closestPoint.OnJourneyEndPoint();
             endJourneyPoint = closestPoint;
         }
+    }
+
+    public void MoveCar()
+    {
+        carMove.SetPathMovePoints(FindPathBFS(startJourneyPoint, endJourneyPoint));
+        carMove.StartMove();
     }
 
     public void ResetPoints()
@@ -405,5 +412,107 @@ public class EnviromentController : MonoBehaviour
         float u = 1 - interpolationFactor;
         return u * u * point0 + 2 * u * interpolationFactor * point1 
              + interpolationFactor * interpolationFactor * point2;
+    }
+
+    public List<Vector3> FindPathBFS(Point startPoint, Point endPoint)
+    {
+        if (startPoint == null || endPoint == null) return null;
+
+        Queue<Point> queue = new Queue<Point>();
+        Dictionary<Point, Point> cameFrom = new Dictionary<Point, Point>(); 
+
+        queue.Enqueue(startPoint);
+        cameFrom[startPoint] = null;
+
+        while (queue.Count > 0)
+        {
+            Point currentPoint = queue.Dequeue();
+
+            if (currentPoint == endPoint)
+            {
+                return RetracePath(cameFrom, startPoint, endPoint);
+            }
+
+            foreach (SolidLine line in solidLines)
+            {
+                Point neighborPoint = GetNeighborPoint(line, currentPoint);
+
+                if (neighborPoint != null && !cameFrom.ContainsKey(neighborPoint))
+                {
+                    queue.Enqueue(neighborPoint);
+                    cameFrom[neighborPoint] = currentPoint;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private Point GetNeighborPoint(SolidLine line, Point currentPoint)
+    {
+        if (line.StartPosition == currentPoint.transform.position)
+        {
+            return points.Find(p => p.transform.position == line.EndPosition);
+        }
+        else if (line.EndPosition == currentPoint.transform.position)
+        {
+            return points.Find(p => p.transform.position == line.StartPosition);
+        }
+        return null;
+    }
+
+    private List<Vector3> RetracePath(Dictionary<Point, Point> cameFrom, Point startPoint, Point endPoint)
+    {
+        List<Vector3> path = new List<Vector3>();
+        Point currentPoint = endPoint;
+        path.Add(currentPoint.transform.position);
+
+        while (currentPoint != null)
+        {
+            Point parentPoint = cameFrom.ContainsKey(currentPoint) ? cameFrom[currentPoint] : null;
+
+            if (parentPoint != null)
+            {
+                List<Vector3> bezierPoints = GetBezierPointsBetweenSegments(parentPoint, currentPoint, cameFrom);
+                path.AddRange(bezierPoints);
+            }
+            currentPoint = parentPoint;
+        }
+
+        path.Add(startPoint.transform.position);
+        path.Reverse(); 
+        return path;
+    }
+
+    private List<Vector3> GetBezierPointsBetweenSegments(Point parentPoint, Point currentPoint, Dictionary<Point, Point> cameFrom)
+    {
+        List<Vector3> bezierPoints = new List<Vector3>();
+        Point grandparentPoint = cameFrom.ContainsKey(parentPoint) ? cameFrom[parentPoint] : null;
+
+        if (grandparentPoint != null)
+        {
+            SolidLine line1 = solidLines.Find(line =>
+                (line.StartPosition == grandparentPoint.transform.position && line.EndPosition == parentPoint.transform.position) ||
+                (line.StartPosition == parentPoint.transform.position && line.EndPosition == grandparentPoint.transform.position));
+
+            SolidLine line2 = solidLines.Find(line =>
+                (line.StartPosition == parentPoint.transform.position && line.EndPosition == currentPoint.transform.position) ||
+                (line.StartPosition == currentPoint.transform.position && line.EndPosition == parentPoint.transform.position));
+
+            if (line1 != null && line2 != null && lineToBezierMap.ContainsKey(line1) && lineToBezierMap.ContainsKey(line2))
+            {
+                SolidLine bezierLine = lineToBezierMap[line1].Find(bezier =>
+                lineToBezierMap.ContainsKey(line2) && lineToBezierMap[line2].Contains(bezier));
+
+                if (bezierLine != null)
+                {
+                    for (int i = 0; i < bezierLine.LineRenderer.positionCount; i++)
+                    {
+                        bezierPoints.Add(bezierLine.LineRenderer.GetPosition(i));
+                    }
+                }
+            }
+        }
+        return bezierPoints;
     }
 }
