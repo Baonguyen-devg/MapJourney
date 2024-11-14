@@ -57,11 +57,9 @@ MonoBehaviour:
   setUpsController: {fileID: 0}
   points: []
   solidLines: []
-  line1: {fileID: 0}
-  line2: {fileID: 0}
-  bezierLine: {fileID: 0}
+  bezierLines: []
   segmentCount: 20
-  offsetDistance: 0.1
+  offsetDistance: 0.4
 --- !u!1 &2520045254633190606
 GameObject:
   m_ObjectHideFlags: 0
