@@ -48,7 +48,7 @@ public class SetupSolidLinePanel : SetupPanel
 
     [Header("Other components"), Space(6)]
     [SerializeField] private SetUpSolidLinesMode setUpSolidsMode = SetUpSolidLinesMode.AddSolidLineMode;
-    [SerializeField] private EnviromentController enviromentController;
+    [SerializeField] private Enviroment enviromentController;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
@@ -95,7 +95,7 @@ public class SetupSolidLinePanel : SetupPanel
 
     private void OnRemoveAllSolidLine()
     {
-        enviromentController.RemoveAllSolidLine();
+        enviromentController.SolidLineManager.RemoveAllSolidLine();
     }
 
     private void OnChangeSetUpMode()

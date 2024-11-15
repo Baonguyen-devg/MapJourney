@@ -16,8 +16,8 @@ public class SetupPointsPanel : SetupPanel
     public static event Action OnChangedAddMode;
     public static event Action OnChangedRemoveMode;
 
-    public bool IsAddPointModeState() => setUpPointsMode == SetUpPointsMode.AddPointMode;
-    public bool IsRemovePointModeState() => setUpPointsMode == SetUpPointsMode.RemovePointMode;
+    public bool IsAddPointMode() => setUpPointsMode == SetUpPointsMode.AddPointMode;
+    public bool IsRemovePointMode() => setUpPointsMode == SetUpPointsMode.RemovePointMode;
 
     public SetUpPointsMode SetUpPointState => setUpPointsMode;
     public void ChangeSetUpPointsMode(SetUpPointsMode setUpPointsMode)
@@ -46,7 +46,7 @@ public class SetupPointsPanel : SetupPanel
 
     [Header("Other components"), Space(6)]
     [SerializeField] private SetUpPointsMode setUpPointsMode = SetUpPointsMode.AddPointMode;
-    [SerializeField] private EnviromentController enviromentController;
+    [SerializeField] private Enviroment enviromentController;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
@@ -93,7 +93,7 @@ public class SetupPointsPanel : SetupPanel
 
     private void OnRemoveAllPoint()
     {
-        enviromentController.RemoveAllPoint();
+        enviromentController.PointManager.RemoveAllPoint();
     }
 
     private void OnChangeSetUpMode()

@@ -23,6 +23,8 @@ public class SetUpsController : MonoBehaviour
     public void ChangeSetupState(SetupState setupState)
     {
         UnselectedAllPanels();
+        enviroment.PointManager.UnSelecteAllPoints();
+
         this.setupState = setupState;
         switch (setupState)
         {
@@ -38,7 +40,7 @@ public class SetUpsController : MonoBehaviour
 
             case SetupState.SetupJourneyEndpoints:
                 setupJourneyEndpointsPanel.OnSelected();
-                stateText.text = "Setup journey end points";
+                stateText.text = "Setup journey points";
                 break;
 
             case SetupState.DemoCarMove:
@@ -63,6 +65,7 @@ public class SetUpsController : MonoBehaviour
     public DemoCarMove DemoCarRun => demoCarMove;
 
     [SerializeField] private TextMeshProUGUI stateText;
+    [SerializeField] private Enviroment enviroment;
 
     private void Awake() => ChangeSetupState(SetupState.SetupPoints);
     private void UnselectedAllPanels()
