@@ -24,6 +24,7 @@ public class SetUpsController : MonoBehaviour
     {
         UnselectedAllPanels();
         enviroment.PointManager.UnSelecteAllPoints();
+        mainUI.SetChangeCameraButtonStatus(false);
 
         this.setupState = setupState;
         switch (setupState)
@@ -44,6 +45,7 @@ public class SetUpsController : MonoBehaviour
                 break;
 
             case SetupState.DemoCarMove:
+                mainUI.SetChangeCameraButtonStatus(true);
                 demoCarMove.OnSelected();
                 stateText.text = "Demo car move";
                 break;
@@ -66,6 +68,7 @@ public class SetUpsController : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI stateText;
     [SerializeField] private Enviroment enviroment;
+    [SerializeField] private MainUI mainUI;
 
     private void Awake() => ChangeSetupState(SetupState.SetupPoints);
     private void UnselectedAllPanels()
