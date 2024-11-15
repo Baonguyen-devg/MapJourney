@@ -27,7 +27,7 @@ public class Enviroment : MonoBehaviour
         Point endJourneyPoint = pointManager.EndJourneyPoint;
 
         Debug.Log($"[Enviroment] DemoCarMove | From {startJourneyPoint} to {endJourneyPoint}");
-        List<Vector3> pathMovePoints = pathFindingManager.FindPathBFS(startJourneyPoint, endJourneyPoint);
+        List<Vector3> pathMovePoints = pathFindingManager.FindPathDijkstra(startJourneyPoint, endJourneyPoint);
         carMove.SetPathMovePoints(pathMovePoints);
         carMove.StartMove();
     }
