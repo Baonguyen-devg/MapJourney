@@ -7,39 +7,69 @@ public class PathFindingManager : MonoBehaviour
 {
     [SerializeField] private Enviroment enviroment;
 
-    public List<Vector3> FindPathBFS(Point startPoint, Point endPoint)
+    public List<Vector3> FindPathDijkstra(Point startPoint, Point endPoint)
     {
         if (startPoint == null || endPoint == null) return null;
 
-        Queue<Point> queue = new Queue<Point>();
+        Dictionary<Point, float> distances = new Dictionary<Point, float>();
         Dictionary<Point, Point> cameFrom = new Dictionary<Point, Point>();
+        List<Point> openList = new List<Point>(); 
+        HashSet<Point> visited = new HashSet<Point>();
 
-        queue.Enqueue(startPoint);
-        cameFrom[startPoint] = null;
+        distances[startPoint] = 0f;
+        openList.Add(startPoint);
 
-        while (queue.Count > 0)
+        while (openList.Count > 0)
         {
-            Point currentPoint = queue.Dequeue();
-
+            Point currentPoint = GetPointWithSmallestDistance(openList, distances);
             if (currentPoint == endPoint)
             {
                 List<Vector3> retracePath = RetracePath(cameFrom, startPoint, endPoint);
                 return GetBezierPathFromRetrace(retracePath);
             }
 
+            openList.Remove(currentPoint);
+            visited.Add(currentPoint);
+
             foreach (SolidLine line in enviroment.SolidLineManager.SolidLines)
             {
                 Point neighborPoint = enviroment.PointManager.GetNeighborPoint(line.StartPosition, line.EndPosition, currentPoint);
-
-                if (neighborPoint != null && !cameFrom.ContainsKey(neighborPoint))
+                if (neighborPoint != null && !visited.Contains(neighborPoint))
                 {
-                    queue.Enqueue(neighborPoint);
-                    cameFrom[neighborPoint] = currentPoint;
+                    float lineWeight = Vector3.Distance(line.StartPosition, line.EndPosition);
+                    float newDistance = distances[currentPoint] + lineWeight;
+
+                    if (!distances.ContainsKey(neighborPoint) || newDistance < distances[neighborPoint])
+                    {
+                        distances[neighborPoint] = newDistance;
+                        cameFrom[neighborPoint] = currentPoint;
+
+                        if (!openList.Contains(neighborPoint))
+                        {
+                            openList.Add(neighborPoint);
+                        }
+                    }
                 }
             }
         }
-
         return null;
+    }
+
+    private Point GetPointWithSmallestDistance(List<Point> openList, Dictionary<Point, float> distances)
+    {
+        Point smallestPoint = openList[0];
+        float smallestDistance = distances[smallestPoint];
+
+        foreach (Point point in openList)
+        {
+            if (distances[point] < smallestDistance)
+            {
+                smallestPoint = point;
+                smallestDistance = distances[point];
+            }
+        }
+
+        return smallestPoint;
     }
 
     public List<Vector3> GetBezierPathFromRetrace(List<Vector3> retracePath)
@@ -70,7 +100,6 @@ public class PathFindingManager : MonoBehaviour
         return bezierPath;
     }
 
-
     private List<Vector3> RetracePath(Dictionary<Point, Point> cameFrom, Point startPoint, Point endPoint)
     {
         List<Vector3> path = new List<Vector3>();
@@ -86,7 +115,6 @@ public class PathFindingManager : MonoBehaviour
                 path.Add(parentPoint.transform.position);
             }
             currentPoint = parentPoint;
-
         }
 
         path.Add(startPoint.transform.position);
