@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class SetupRoadPanel : MonoBehaviour
 {
-    [SerializeField] private EnviromentController enviromentController;
+    [SerializeField] private Enviroment enviromentController;
 
     private void OnEnable()
     {
-        enviromentController.ConverLineToSpline();
+        enviromentController.ConvertLineToSpline();
     }
 }

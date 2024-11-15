@@ -809,7 +809,7 @@ MonoBehaviour:
   resetAllPointButton: {fileID: 595405068}
   turnOnModeButton: {fileID: 311007953}
   setupJourneyPointType: 1
-  enviromentController: {fileID: 1172910769}
+  enviromentController: {fileID: 7463421382176466804}
   setUpsController: {fileID: 375441612}
 --- !u!1 &80318990
 GameObject:
@@ -2726,6 +2726,7 @@ MonoBehaviour:
   setupJourneyEndpointsPanel: {fileID: 43605628}
   demoCarMove: {fileID: 910443348}
   stateText: {fileID: 1764161}
+  enviroment: {fileID: 7463421382176466804}
 --- !u!1 &418169002
 GameObject:
   m_ObjectHideFlags: 0
@@ -3127,7 +3128,7 @@ MonoBehaviour:
   removeAllPointButton: {fileID: 421041195}
   turnOnModeButton: {fileID: 1963098080}
   setUpPointsMode: 1
-  enviromentController: {fileID: 1172910769}
+  enviromentController: {fileID: 7463421382176466804}
   setUpsController: {fileID: 375441612}
 --- !u!1 &437719305
 GameObject:
@@ -5166,7 +5167,7 @@ MonoBehaviour:
   boardImage: {fileID: 910443349}
   turnOnModeButton: {fileID: 1017772699}
   setUpsController: {fileID: 375441612}
-  enviromentController: {fileID: 1172910769}
+  enviromentController: {fileID: 7463421382176466804}
 --- !u!114 &910443349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6022,17 +6023,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1136685423}
   m_CullTransparentMesh: 1
---- !u!114 &1172910769 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5322905484079806682, guid: b362b54cc7a36844885430429f9379da, type: 3}
-  m_PrefabInstance: {fileID: 7463421382176466803}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32f85fd8f6a5062468f0063eca0ca7d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1203547013
 GameObject:
   m_ObjectHideFlags: 0
@@ -6928,7 +6918,7 @@ MonoBehaviour:
   removeAllSolidLineButton: {fileID: 2095598687}
   turnOnModeButton: {fileID: 1836093509}
   setUpSolidsMode: 1
-  enviromentController: {fileID: 1172910769}
+  enviromentController: {fileID: 7463421382176466804}
   setUpsController: {fileID: 375441612}
 --- !u!1 &1423137718
 GameObject:
@@ -9581,11 +9571,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5322905484079806682, guid: b362b54cc7a36844885430429f9379da, type: 3}
+    - target: {fileID: 5412465449383771220, guid: b362b54cc7a36844885430429f9379da, type: 3}
       propertyPath: carMove
       value: 
       objectReference: {fileID: 3667211755460011834}
-    - target: {fileID: 5322905484079806682, guid: b362b54cc7a36844885430429f9379da, type: 3}
+    - target: {fileID: 5412465449383771220, guid: b362b54cc7a36844885430429f9379da, type: 3}
       propertyPath: setUpsController
       value: 
       objectReference: {fileID: 375441612}
@@ -9598,6 +9588,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b362b54cc7a36844885430429f9379da, type: 3}
+--- !u!114 &7463421382176466804 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5412465449383771220, guid: b362b54cc7a36844885430429f9379da, type: 3}
+  m_PrefabInstance: {fileID: 7463421382176466803}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366cfed160eb4ae4fa528e14cc8822d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -15,8 +15,8 @@ public class SetupJourneyEndpoints: SetupPanel
     public static event Action OnChangedSetStartPoint;
     public static event Action OnChangedSetEndPoint;
 
-    public bool IsSetStartPointState() => setupJourneyPointType == SetupJourneyPointType.StartPoint;
-    public bool IsSetEndPointState() => setupJourneyPointType == SetupJourneyPointType.EndPoint;
+    public bool IsSetStartPointMode() => setupJourneyPointType == SetupJourneyPointType.StartPoint;
+    public bool IsSetEndPointMode() => setupJourneyPointType == SetupJourneyPointType.EndPoint;
 
     public SetupJourneyPointType SetupJourneyState => setupJourneyPointType;
     public void ChangeSetupJourneyPointType(SetupJourneyPointType setupJourneyPointType)
@@ -45,7 +45,7 @@ public class SetupJourneyEndpoints: SetupPanel
 
     [Header("Other components"), Space(6)]
     [SerializeField] private SetupJourneyPointType setupJourneyPointType = SetupJourneyPointType.StartPoint;
-    [SerializeField] private EnviromentController enviromentController;
+    [SerializeField] private Enviroment enviromentController;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
@@ -92,11 +92,12 @@ public class SetupJourneyEndpoints: SetupPanel
 
     private void OnResetAllPoint()
     {
-        enviromentController.ResetPoints();
+        enviromentController.PointManager.ResetAllJourneyPoint();
     }
 
     private void OnChangeSetUpMode()
     {
         setUpsController.ChangeSetupState(SetupState.SetupJourneyEndpoints);
+        enviromentController.PointManager.ResetAllJourneyPoint();
     }
 }
