@@ -9,7 +9,6 @@ public class PointManager : MonoBehaviour
 
     [Header("Other components"), Space(6)]
     [SerializeField] private LayerMask groundLayerMask;
-    [SerializeField] private Enviroment enviroment;
 
     [Header("Databases"), Space(6)]
     [SerializeField] private PointSpawner pointSpawner;
@@ -54,31 +53,31 @@ public class PointManager : MonoBehaviour
 
     private void AddRemovePoint()
     {
-        if (!enviroment.SetUpsController.IsSetupPoints()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupPoints()) return;
         Debug.Log("[PointManager] AddRemovePoint | Avaible to create/remove point");
 
         //Baodev: Only add/remove point when game in add/remove point mode
-        if (enviroment.SetUpsController.SetUpPointPanel.IsAddPointMode()) DetectMouseRayToAddPoint();
-        if (enviroment.SetUpsController.SetUpPointPanel.IsRemovePointMode()) DetectMouseRayToRemovePoint();
+        if (Enviroment.Instance.SetUpsController.SetUpPointPanel.IsAddPointMode()) DetectMouseRayToAddPoint();
+        if (Enviroment.Instance.SetUpsController.SetUpPointPanel.IsRemovePointMode()) DetectMouseRayToRemovePoint();
     }
 
     private void SetJourneyPoints()
     {
-        if (!enviroment.SetUpsController.IsSetupJourneyEndpoints()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupJourneyEndpoints()) return;
         Debug.Log("[PointManager] SetJourneyPoints | Avaible to set journey start/end point");
 
         //Baodev: Only set start/end point when game in set journey start/end point mode
-        if (enviroment.SetUpsController.SetupJourneyEndpoints.IsSetStartPointMode()) DetectMouseRayToSetStartJourney();
-        if (enviroment.SetUpsController.SetupJourneyEndpoints.IsSetEndPointMode()) DetectMouseRayToSetEndJourney();
+        if (Enviroment.Instance.SetUpsController.SetupJourneyEndpoints.IsSetStartPointMode()) DetectMouseRayToSetStartJourney();
+        if (Enviroment.Instance.SetUpsController.SetupJourneyEndpoints.IsSetEndPointMode()) DetectMouseRayToSetEndJourney();
     }
 
     private void SetupSolidLinePoints()
     {
-        if (!enviroment.SetUpsController.IsSetupSolidLines()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
         Debug.Log("[PointManager] SetupSolidLinePoints | Avaible to create SolidLine");
 
         //Baodev: Only add/remove solidLine when game in add/remove solidLine mode
-        if (enviroment.SetUpsController.SetupSolidLinePanel.IsAddSolidLineState()) DetectMouseRayToSetSolidLinePoints();
+        if (Enviroment.Instance.SetUpsController.SetupSolidLinePanel.IsAddSolidLineState()) DetectMouseRayToSetSolidLinePoints();
     }
     #endregion
 
@@ -116,7 +115,7 @@ public class PointManager : MonoBehaviour
 
     private void RemovePoint(Point closestPoint)
     {
-        enviroment.SolidLineManager.RemoveSolidLinesConnectedToPoint(closestPoint.transform.position);
+        Enviroment.Instance.SolidLineManager.RemoveSolidLinesConnectedToPoint(closestPoint.transform.position);
         pointSpawner.Despawn(closestPoint);
         points.Remove(closestPoint);
     }
@@ -143,7 +142,7 @@ public class PointManager : MonoBehaviour
         {
             SetSolidLineStartPoint(closestPoint);
             SetSolidLineEndPoint(closestPoint);
-            enviroment.SolidLineManager.CreateSolidLine();
+            Enviroment.Instance.SolidLineManager.CreateSolidLine();
         }
     }
 
@@ -179,7 +178,7 @@ public class PointManager : MonoBehaviour
 
     public void ResetSolidLinePoints()
     {
-        if (!enviroment.SetUpsController.IsSetupSolidLines()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
         if (solidLineStartPoint != null) solidLineStartPoint.OnUnselected();
         if (solidLineEndPoint != null) solidLineEndPoint.OnUnselected();
         solidLineStartPoint = null;
@@ -196,7 +195,7 @@ public class PointManager : MonoBehaviour
 
         if (haveClosetPoint)
         {
-            bool enoughStartPoint = (startJourneyPoints.Count == enviroment.CarManager.CarNumber);
+            bool enoughStartPoint = (startJourneyPoints.Count == Enviroment.Instance.CarManager.CarNumber);
             if (!enoughStartPoint)
             {
                 if (!closestPoint.IsStartJourneyPoint)
@@ -244,7 +243,7 @@ public class PointManager : MonoBehaviour
 
     public void ResetAllJourneyPoint()
     {
-        if (!enviroment.SetUpsController.IsSetupJourneyEndpoints()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupJourneyEndpoints()) return;
         if (startJourneyPoints.Count != 0)
         {
             foreach (Point point in startJourneyPoints)

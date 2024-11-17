@@ -10,7 +10,6 @@ public class SolidLineManager : MonoBehaviour
 
     [Header("Other components"), Space(6)]
     [SerializeField] private LayerMask groundLayerMask;
-    [SerializeField] private Enviroment enviroment;
 
     [Header("Databases"), Space(6)]
     [SerializeField] private SolidLineSpawner solidLineSpawner;
@@ -45,11 +44,11 @@ public class SolidLineManager : MonoBehaviour
 
     private void CreateRemoveSolidLine()
     {
-        if (!enviroment.SetUpsController.IsSetupSolidLines()) return;
+        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
         Debug.Log("[SolidLineManager] CreateRemoveSolidLine | Avaible to create/remove SolidLine");
 
         //Baodev: Only add/remove solidLine when game in remove solidLine mode
-        if (enviroment.SetUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) DetectMouseRayToRemoveSolidLine();
+        if (Enviroment.Instance.SetUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) DetectMouseRayToRemoveSolidLine();
     }
     #endregion
 
@@ -57,8 +56,8 @@ public class SolidLineManager : MonoBehaviour
     //Baodev: Get start/end point from PointManager, create a solidLine
     public void CreateSolidLine()
     {
-        Point startPoint = enviroment.PointManager.StartSolidLinePoint;
-        Point endPoint = enviroment.PointManager.EndSolidLinePoint;
+        Point startPoint = Enviroment.Instance.PointManager.StartSolidLinePoint;
+        Point endPoint = Enviroment.Instance.PointManager.EndSolidLinePoint;
 
         if (startPoint != null && endPoint != null)
         {
@@ -66,7 +65,7 @@ public class SolidLineManager : MonoBehaviour
             Vector3 endPosition = endPoint.transform.position;
 
             TryCreateSolidAndBezierLine(startPosition, endPosition);
-            enviroment.PointManager.SelectSolidLineEndPoint();
+            Enviroment.Instance.PointManager.SelectSolidLineEndPoint();
         }
     }
 
@@ -200,7 +199,7 @@ public class SolidLineManager : MonoBehaviour
     {
         List<Vector3> bezierPoints = new List<Vector3>();
 
-        Vector3 sharedPoint = enviroment.SolidLineManager.FindSharedPoint(line1, line2);
+        Vector3 sharedPoint = Enviroment.Instance.SolidLineManager.FindSharedPoint(line1, line2);
 
         if (sharedPoint == VECTOR3_INF)
         {

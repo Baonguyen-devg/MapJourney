@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enviroment : MonoBehaviour
+public class Enviroment : Singleton<Enviroment>
 {
     [Header("Managers:"), Space(6)]    
     [SerializeField] private PointManager pointManager;

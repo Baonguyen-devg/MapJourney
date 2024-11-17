@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class PathFindingManager : MonoBehaviour
 {
-    [SerializeField] private Enviroment enviroment;
-
     public List<Vector3> FindPathDijkstra(Point startPoint, Point endPoint)
     {
         if (startPoint == null || endPoint == null) return null;
@@ -31,9 +29,9 @@ public class PathFindingManager : MonoBehaviour
             openList.Remove(currentPoint);
             visited.Add(currentPoint);
 
-            foreach (SolidLine line in enviroment.SolidLineManager.SolidLines)
+            foreach (SolidLine line in Enviroment.Instance.SolidLineManager.SolidLines)
             {
-                Point neighborPoint = enviroment.PointManager.GetNeighborPoint(line.StartPosition, line.EndPosition, currentPoint);
+                Point neighborPoint = Enviroment.Instance.PointManager.GetNeighborPoint(line.StartPosition, line.EndPosition, currentPoint);
                 if (neighborPoint != null && !visited.Contains(neighborPoint))
                 {
                     float lineWeight = Vector3.Distance(line.StartPosition, line.EndPosition);
@@ -82,15 +80,15 @@ public class PathFindingManager : MonoBehaviour
             Vector3 currentPoint = retracePath[i];
             Vector3 nextPoint = retracePath[i + 1];
 
-            SolidLine line1 = enviroment.SolidLineManager.FindSolidLine(currentPoint, nextPoint);
+            SolidLine line1 = Enviroment.Instance.SolidLineManager.FindSolidLine(currentPoint, nextPoint);
             if (line1 != null && i < retracePath.Count - 2)
             {
                 Vector3 nextNextPoint = retracePath[i + 2];
-                SolidLine line2 = enviroment.SolidLineManager.FindSolidLine(nextPoint, nextNextPoint);
+                SolidLine line2 = Enviroment.Instance.SolidLineManager.FindSolidLine(nextPoint, nextNextPoint);
 
                 if (line2 != null)
                 {
-                    List<Vector3> bezierPoints = enviroment.SolidLineManager.GetBezierPointsBetweenLines(line1, line2);
+                    List<Vector3> bezierPoints = Enviroment.Instance.SolidLineManager.GetBezierPointsBetweenLines(line1, line2);
                     bezierPath.AddRange(bezierPoints);
                 }
             }

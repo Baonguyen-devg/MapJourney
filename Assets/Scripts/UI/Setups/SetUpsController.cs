@@ -1,4 +1,6 @@
+using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum SetupState
@@ -23,8 +25,9 @@ public class SetUpsController : MonoBehaviour
     public void ChangeSetupState(SetupState setupState)
     {
         UnselectedAllPanels();
-        enviroment.PointManager.UnSelecteAllPoints();
+        Enviroment.Instance.PointManager.UnSelecteAllPoints();
         mainUI.SetChangeCameraButtonStatus(false);
+        mainUI.SetClockStatus(false);
 
         this.setupState = setupState;
         switch (setupState)
@@ -46,6 +49,7 @@ public class SetUpsController : MonoBehaviour
 
             case SetupState.DemoCarMove:
                 mainUI.SetChangeCameraButtonStatus(true);
+                StartCoroutine(StartCountTimeCoroutine());
                 demoCarMove.OnSelected();
                 stateText.text = "Demo car move";
                 break;
@@ -67,15 +71,20 @@ public class SetUpsController : MonoBehaviour
     public DemoCarMove DemoCarRun => demoCarMove;
 
     [SerializeField] private TextMeshProUGUI stateText;
-    [SerializeField] private Enviroment enviroment;
     [SerializeField] private MainUI mainUI;
 
-    private void Awake() => ChangeSetupState(SetupState.SetupPoints);
+    private void Start() => ChangeSetupState(SetupState.SetupPoints);
     private void UnselectedAllPanels()
     {
         setupPointPanel.OnUnselected();
         setupSolidLinePanel.OnUnselected();
         setupJourneyEndpointsPanel.OnUnselected();
         demoCarMove.OnUnselected();
+    }
+
+    private IEnumerator StartCountTimeCoroutine()
+    {
+        yield return new WaitForSeconds(1f);
+        mainUI.StartCountTime();
     }
 }

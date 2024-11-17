@@ -46,7 +46,6 @@ public class SetupPointsPanel : SetupPanel
 
     [Header("Other components"), Space(6)]
     [SerializeField] private SetUpPointsMode setUpPointsMode = SetUpPointsMode.AddPointMode;
-    [SerializeField] private Enviroment enviromentController;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
@@ -93,7 +92,7 @@ public class SetupPointsPanel : SetupPanel
 
     private void OnRemoveAllPoint()
     {
-        enviromentController.PointManager.RemoveAllPoint();
+        Enviroment.Instance.PointManager.RemoveAllPoint();
     }
 
     private void OnChangeSetUpMode()
