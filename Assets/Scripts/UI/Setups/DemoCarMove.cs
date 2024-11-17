@@ -8,7 +8,6 @@ public class DemoCarMove : SetupPanel
 {
     [SerializeField] private Button turnOnModeButton;
     [SerializeField] private SetUpsController setUpsController;
-    [SerializeField] private Enviroment enviroment;
 
     private void Awake()
     {
@@ -33,6 +32,6 @@ public class DemoCarMove : SetupPanel
     private void OnChangeSetUpMode()
     {
         setUpsController.ChangeSetupState(SetupState.DemoCarMove);
-        enviroment.CarManager.DemoCarMove();
+        Enviroment.Instance.CarManager.DemoCarMove();
     }
 }
