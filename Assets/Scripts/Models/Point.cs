@@ -24,6 +24,12 @@ public class Point : MonoBehaviour
     public PointType PointType => pointType;
     public Renderer PointRenderer => pointRenderer;
 
+    private bool isStartJourneyPoint = false;
+    private bool isEndJourneyPoint = false;
+
+    public bool IsStartJourneyPoint => isStartJourneyPoint;
+    public bool IsEndJourneyPoint => isEndJourneyPoint;
+
     public void Init(float xCoordinate, float yCoordinate, float zCoordinate, PointType pointType = default)
     {
         this.xCoordinate = xCoordinate;
@@ -48,10 +54,22 @@ public class Point : MonoBehaviour
     public void OnSelected() => transform.DOScale(Vector3.one * 2.5f, 0.2f).SetEase(Ease.Linear);
     public void OnUnselected() => transform.DOScale(Vector3.one * 2, 0.2f).SetEase(Ease.Linear);
 
-    public void OnJourneyStartPoint() => pointRenderer.material.DOColor(Color.red, 0.2f);
-    public void OnJourneyEndPoint() => pointRenderer.material.DOColor(Color.green, 0.2f);
+    public void OnJourneyStartPoint()
+    {
+        isStartJourneyPoint = true;
+        pointRenderer.material.DOColor(Color.red, 0.2f);
+    }
+
+    public void OnJourneyEndPoint()
+    {
+        isEndJourneyPoint = true;
+        pointRenderer.material.DOColor(Color.green, 0.2f);
+    }
+
     public void OnNormalPoint()
     {
+        isEndJourneyPoint = false;
+        isStartJourneyPoint = false;
         pointRenderer.material.DOColor(Color.white, 0.2f);
         transform.localScale = Vector3.one * 2;
     }

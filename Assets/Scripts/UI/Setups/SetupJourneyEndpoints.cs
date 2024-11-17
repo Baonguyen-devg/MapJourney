@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,10 +43,11 @@ public class SetupJourneyEndpoints: SetupPanel
     [SerializeField] private UISwitcher.UISwitcher changeEndPointSwitcher;
     [SerializeField] private Button resetAllPointButton;
     [SerializeField] private Button turnOnModeButton;
+    [SerializeField] private TMP_InputField carNumberInput;
 
     [Header("Other components"), Space(6)]
     [SerializeField] private SetupJourneyPointType setupJourneyPointType = SetupJourneyPointType.StartPoint;
-    [SerializeField] private Enviroment enviromentController;
+    [SerializeField] private Enviroment enviroment;
     [SerializeField] private SetUpsController setUpsController;
 
     private void Awake()
@@ -53,6 +55,16 @@ public class SetupJourneyEndpoints: SetupPanel
         RegisterEvents();
         ChangeSetupJourneyPointType(SetupJourneyPointType.StartPoint);
         changeStartPointSwitcher.SetWithNotify(true);
+    }
+
+    public void OnCarNumberChange()
+    {
+        string inputText = carNumberInput.text;
+
+        if (int.TryParse(inputText, out int carCount))
+        {
+            enviroment.CarManager.SetCarNumber(carCount);
+        }
     }
 
     private void RegisterEvents()
@@ -92,12 +104,12 @@ public class SetupJourneyEndpoints: SetupPanel
 
     private void OnResetAllPoint()
     {
-        enviromentController.PointManager.ResetAllJourneyPoint();
+        enviroment.PointManager.ResetAllJourneyPoint();
     }
 
     private void OnChangeSetUpMode()
     {
         setUpsController.ChangeSetupState(SetupState.SetupJourneyEndpoints);
-        enviromentController.PointManager.ResetAllJourneyPoint();
+        enviroment.PointManager.ResetAllJourneyPoint();
     }
 }

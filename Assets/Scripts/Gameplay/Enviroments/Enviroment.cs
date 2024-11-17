@@ -8,29 +8,18 @@ public class Enviroment : MonoBehaviour
     [SerializeField] private PointManager pointManager;
     [SerializeField] private SolidLineManager solidLineManager;
     [SerializeField] private PathFindingManager pathFindingManager;
+    [SerializeField] private CarManager carManager;
 
     public PointManager PointManager => pointManager;
     public SolidLineManager SolidLineManager => solidLineManager;
     public PathFindingManager PathFindingManager => pathFindingManager;
+    public CarManager CarManager => carManager;
 
     [Header("Other components:"), Space(6)]    
     [SerializeField] private SetUpsController setUpsController;
     [SerializeField] private SplineComputer roadSplineComputer;
-    [SerializeField] private CarMoving carMove;
 
     public SetUpsController SetUpsController => setUpsController;
-
-    [ContextMenu("Demo car move")]
-    public void DemoCarMove()
-    {
-        Point startJourneyPoint = pointManager.StartJourneyPoint;
-        Point endJourneyPoint = pointManager.EndJourneyPoint;
-
-        Debug.Log($"[Enviroment] DemoCarMove | From {startJourneyPoint} to {endJourneyPoint}");
-        List<Vector3> pathMovePoints = pathFindingManager.FindPathDijkstra(startJourneyPoint, endJourneyPoint);
-        carMove.SetPathMovePoints(pathMovePoints);
-        carMove.StartMove();
-    }
 
     [ContextMenu("Convert solidLine to spline")]
     public void ConvertLineToSpline()
