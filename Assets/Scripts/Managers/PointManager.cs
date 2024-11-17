@@ -24,10 +24,10 @@ public class PointManager : MonoBehaviour
     public Point StartSolidLinePoint => solidLineStartPoint;
     public Point EndSolidLinePoint => solidLineEndPoint;
 
-    [SerializeField] private Point startJourneyPoint;
+    [SerializeField] private List<Point> startJourneyPoints = new List<Point>();
     [SerializeField] private Point endJourneyPoint;
 
-    public Point StartJourneyPoint => startJourneyPoint;
+    public List<Point> StartJourneyPoints => startJourneyPoints;
     public Point EndJourneyPoint => endJourneyPoint;
 
     #region initialization
@@ -192,13 +192,39 @@ public class PointManager : MonoBehaviour
     public void DetectMouseRayToSetStartJourney()
     {
         var haveClosetPoint = TryGetClosestPoint(out Point closestPoint) && closestPoint != null;
+        Debug.Log($"[PointManager] DetectMouseRayToSetStartJourney | startJourneyPoint: {closestPoint}");
+
         if (haveClosetPoint)
         {
-            if (startJourneyPoint != null) startJourneyPoint.OnNormalPoint();
-            Debug.Log($"[PointManager] DetectMouseRayToSetStartJourney | startJourneyPoint: {closestPoint}");
-
-            closestPoint.OnJourneyStartPoint();
-            startJourneyPoint = closestPoint;
+            bool enoughStartPoint = (startJourneyPoints.Count == enviroment.CarManager.CarNumber);
+            if (!enoughStartPoint)
+            {
+                if (!closestPoint.IsStartJourneyPoint)
+                {
+                    closestPoint.OnJourneyStartPoint();
+                    startJourneyPoints.Add(closestPoint);
+                }
+                else
+                {
+                    closestPoint.OnNormalPoint();
+                    startJourneyPoints.Remove(closestPoint);
+                }
+            }
+            else 
+            {
+                if (closestPoint.IsStartJourneyPoint)
+                {
+                    closestPoint.OnNormalPoint();
+                    startJourneyPoints.Remove(closestPoint);
+                }
+                else
+                {
+                    startJourneyPoints[0].OnNormalPoint();
+                    startJourneyPoints.Remove(startJourneyPoints[0]);
+                    closestPoint.OnJourneyStartPoint();
+                    startJourneyPoints.Add(closestPoint);
+                }
+            }
         }
     }
 
@@ -219,9 +245,14 @@ public class PointManager : MonoBehaviour
     public void ResetAllJourneyPoint()
     {
         if (!enviroment.SetUpsController.IsSetupJourneyEndpoints()) return;
-        if (startJourneyPoint != null) startJourneyPoint.OnNormalPoint();
+        if (startJourneyPoints.Count != 0)
+        {
+            foreach (Point point in startJourneyPoints)
+                point.OnNormalPoint();
+        }
+
         if (endJourneyPoint != null) endJourneyPoint.OnNormalPoint();
-        startJourneyPoint = null;
+        startJourneyPoints.Clear();
         endJourneyPoint = null;
     }
     #endregion

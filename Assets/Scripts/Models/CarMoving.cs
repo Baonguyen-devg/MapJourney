@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+public enum CarType
+{
+    Default,
+}
+
 public class CarMoving : MonoBehaviour
 {
     [SerializeField] private List<Vector3> pathMovePoints = new List<Vector3>();
+    [SerializeField] private CarType carType;
     [SerializeField] private int pathIndex = 0;
     [SerializeField] private float speed;
     [SerializeField] private bool doMove = false;
 
     public void SetPathMovePoints(List<Vector3> pathMovePoints) => this.pathMovePoints = pathMovePoints;
+    public CarType CarType => carType;
 
     public void MoveToStartPoint(Vector3 startPoint)
     {
