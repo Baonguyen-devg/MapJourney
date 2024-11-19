@@ -10,6 +10,7 @@ public class PopupManager : Singleton<PopupManager>
         Setting,
         Alert,
         Credit,
+        SettingInGame,
     }
 
     [SerializeField] private List<BasePopup> popupPrefabs = new List<BasePopup>();
@@ -38,17 +39,25 @@ public class PopupManager : Singleton<PopupManager>
         return null;
     }
 
-    public void OpenPopup<T>(PopupType popupType) where T : BasePopup
+    public T OpenPopup<T>(PopupType popupType) where T : BasePopup
     {
         BasePopup basePopup = GetPopup(popupType);
         T popup = basePopup as T;
         popup?.Open();
+        return popup;
     }
 
-    public void ClosePopup<T>(PopupType popupType) where T : BasePopup
+    public T ClosePopup<T>(PopupType popupType) where T : BasePopup
     {
         BasePopup basePopup = Instance.GetPopup(popupType);
         T popup = basePopup as T;
         popup?.Close();
+        return popup;
+    }
+
+    public void OpenAlert(string content)
+    {
+        AlertPopup alertPopup = OpenPopup<AlertPopup>(PopupType.Alert);
+        alertPopup.ChangeContentText(content);
     }
 }

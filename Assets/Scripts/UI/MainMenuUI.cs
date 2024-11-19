@@ -1,14 +1,14 @@
 using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainMenuUI : MonoBehaviour
 {
+    [Header("Other components"), Space(6)]
     [SerializeField] private RectTransform logoRect;
+
+    [Header("Buttons"), Space(6)]
     [SerializeField] private Button playButton;
     [SerializeField] private Button settingButton;
     [SerializeField] private Button creditButton;
@@ -50,7 +50,9 @@ public class MainMenuUI : MonoBehaviour
     private void OnPlay()
     {
         Debug.Log("[MainMenuUI] OnPlay | Load Scene Gameplay");
+        Enviroment.Instance.ResetGame();
         AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.GameplayBackground);
         SceneManager.LoadScene("GamePlay");
     }
 

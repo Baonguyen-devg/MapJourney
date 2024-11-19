@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.ConstrainedExecution;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 
 public class CarManager : MonoBehaviour
@@ -10,7 +7,7 @@ public class CarManager : MonoBehaviour
     [Header("Databases"), Space(6)]
     [SerializeField] private CarSpawner carSpawner;
     [SerializeField] private List<CarData> carDatas = new List<CarData>();
-    [SerializeField] private List<CarMoving> carMoves = new List<CarMoving>();
+    [SerializeField] private List<CarMovement> carMovements = new List<CarMovement>();
 
     [SerializeField] private int carNumber;
     public int CarNumber => carNumber;
@@ -38,11 +35,44 @@ public class CarManager : MonoBehaviour
     {
         carArrived = 0;
         float totalTravelTime = 0f;
-
         List<Point> startJourneyPoints = Enviroment.Instance.PointManager.StartJourneyPoints;
         Point endJourneyPoint = Enviroment.Instance.PointManager.EndJourneyPoint;
 
-        DestroyAllCarMoving();
+        DestroyAllCarMovements();
+        totalTravelTime = CreateCarMovementsAt(totalTravelTime, startJourneyPoints, endJourneyPoint);
+
+        float mediumTravelTime = (float)totalTravelTime / carDatas.Count;
+        ApplyMediumTravelTime(mediumTravelTime);
+        StartDemoCarMovement();
+    }
+
+    private void StartDemoCarMovement()
+    {
+        CarDataUpdated?.Invoke(carDatas);
+        CameraManager.Instance.CreateVirtualCameraFollowCar(carMovements);
+        foreach (CarMovement carMovement in carMovements)
+            carMovement.StartMove();
+    }
+
+    private void ApplyMediumTravelTime(float mediumTravelTime)
+    {
+        if (carMovements.Count != 1)
+        {
+            foreach (CarMovement carMoving in carMovements)
+            {
+                float initialSpeed = CalculateInitialVelocity(carMoving.Distance, mediumTravelTime, carMoving.Acceleration);
+                carMoving.SetInitialSpeed(initialSpeed);
+                carMoving.SetTime(mediumTravelTime);
+
+                int carIndex = carMovements.IndexOf(carMoving);
+                carDatas[carIndex].SetInitialSpeed(initialSpeed);
+                carDatas[carIndex].SetTime(mediumTravelTime);
+            }
+        }
+    }
+
+    private float CreateCarMovementsAt(float totalTravelTime, List<Point> startJourneyPoints, Point endJourneyPoint)
+    {
         foreach (Point startPoint in startJourneyPoints)
         {
             Debug.Log($"[CarManager] DemoCarMove | From {startPoint} to {endJourneyPoint}");
@@ -54,28 +84,13 @@ public class CarManager : MonoBehaviour
 
             totalTravelTime = totalTravelTime + travelTime;
             carDatas[carId].SetTime(travelTime);
-            CarDataUpdated?.Invoke(carDatas);
 
-            CarMoving newCarMoving = CreateCarMoving();
+            CarMovement newCarMoving = CreateCarMoving();
             newCarMoving.SetDistance(totalDistance);
             newCarMoving.Init(pathMovePoints, carDatas[carId].Acceleration, carDatas[carId].InitialSpeed, carDatas[carId].Time);
         }
 
-        float mediumTravelTime = (float)totalTravelTime / carDatas.Count;
-        foreach (CarMoving carMoving in carMoves)
-        {
-            float initialSpeed = CalculateInitialVelocity(carMoving.Distance, mediumTravelTime, carMoving.Acceleration);
-            carMoving.SetInitialSpeed(initialSpeed);
-            carMoving.SetTime(mediumTravelTime);
-         
-            int carIndex = carMoves.IndexOf(carMoving);
-            carDatas[carIndex].SetInitialSpeed(initialSpeed);
-            carDatas[carIndex].SetTime(mediumTravelTime);
-        }
-
-        CarDataUpdated?.Invoke(carDatas);
-        foreach (CarMoving carMoving in carMoves)
-            carMoving.StartMove();
+        return totalTravelTime;
     }
 
     public void CreaseCarArrived()
@@ -86,25 +101,37 @@ public class CarManager : MonoBehaviour
 
     public void CheckEnoughCarArrived()
     {
-        if (carArrived != carDatas.Count) return;
+        if (!IsEnoughCarArrived()) return;
         EnoughCarArrived?.Invoke();
+    }
+
+    public bool IsEnoughCarArrived()
+    {
+        return carArrived == carDatas.Count;
     }
 
     public float CalculateTravelTime(float totalDistance, float acceleration, float initialSpeed)
     {
-        Debug.Log($"[CarManager] CalculateTravelTime | totalDistance: {totalDistance}," +
-            $" acceleration: {acceleration}, initialSpeed: {initialSpeed}");
+        Debug.Log($"[CarManager] CalculateTravelTime | totalDistance: {totalDistance}, " +
+                  $"acceleration: {acceleration}, initialSpeed: {initialSpeed}");
 
-        if (acceleration != 0f)
+        double distance = totalDistance;
+        double accel = acceleration;
+        double initSpeed = initialSpeed;
+
+        if (Math.Abs(accel) > Mathf.Epsilon)
         {
-            float discriminant = Mathf.Pow(initialSpeed, 2) + 2 * acceleration * totalDistance;
-            if (discriminant < 0) return -1f;
-            return (float)(-initialSpeed + (float)Mathf.Sqrt(discriminant)) / acceleration;
+            double discriminant = Math.Pow(initSpeed, 2) + 2 * accel * distance;
+            if (discriminant < 0)
+                return -1f; 
+
+            return (float)((-initSpeed + Math.Sqrt(discriminant)) / accel); 
         }
         else
         {
-            if (initialSpeed == 0f) return -1f;
-            return (float) totalDistance / initialSpeed;
+            if (Math.Abs(initSpeed) < Mathf.Epsilon)
+                return -1f; 
+            return (float)(distance / initSpeed);
         }
     }
 
@@ -125,24 +152,24 @@ public class CarManager : MonoBehaviour
         return totalDistance;
     }
 
-    public CarMoving CreateCarMoving()
+    public CarMovement CreateCarMoving()
     {
-        CarMoving carMoving = carSpawner.Spawn(CarType.Default);
-        carMoves.Add(carMoving);
-        return carMoving;
+        CarMovement carMovement = carSpawner.Spawn(CarType.Default);
+        carMovements.Add(carMovement);
+        return carMovement;
     }
 
-    public void DestroyCarMoving(CarMoving carMoving)
+    public void DestroyCarMoving(CarMovement carMovement)
     {
-        if (!carMoves.Contains(carMoving)) return;
-        carMoves.Remove(carMoving);
-        carSpawner.Despawn(carMoving);
+        if (!carMovements.Contains(carMovement)) return;
+        carMovements.Remove(carMovement);
+        carSpawner.Despawn(carMovement);
     }
 
-    public void DestroyAllCarMoving()
+    public void DestroyAllCarMovements()
     {
-        for (int i = carMoves.Count - 1; i >= 0; i--)
-            DestroyCarMoving(carMoves[i]);
+        for (int i = carMovements.Count - 1; i >= 0; i--)
+            DestroyCarMoving(carMovements[i]);
     }
 
     public void UpdateCarDatas(List<CarInformation> carInformations)

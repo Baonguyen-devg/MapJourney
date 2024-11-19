@@ -82,23 +82,35 @@ public class SetupSolidLinePanel : SetupPanel
 
     private void OnChangeAddMode(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetUpSolidLinesMode(SetUpSolidLinesMode.AddSolidLineMode);
         changeRemoveModeSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnChangeRemoveMode(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetUpSolidLinesMode(SetUpSolidLinesMode.RemoveSolidLineMode);
         changeAddModeSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnRemoveAllSolidLine()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         Enviroment.Instance.SolidLineManager.RemoveAllSolidLine();
     }
 
     private void OnChangeSetUpMode()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        bool isDemoMode = setUpsController.IsDemoCarMove();
+        bool isEnoughCarArrived = Enviroment.Instance.CarManager.IsEnoughCarArrived();
+        if (isDemoMode && !isEnoughCarArrived)
+        {
+            Debug.Log("[SetupSolidLinePanel] OnChangeSetupMode | In demo mode");
+            PopupManager.Instance.OpenAlert(AlertPopup.ALERT_IN_DEMO_MODE);
+            return;
+        }
         setUpsController.ChangeSetupState(SetupState.SetupSolidLines);
     }
 }

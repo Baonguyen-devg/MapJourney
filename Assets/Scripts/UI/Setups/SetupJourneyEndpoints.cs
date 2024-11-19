@@ -1,5 +1,4 @@
 ﻿using DG.Tweening;
-using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -97,25 +96,39 @@ public class SetupJourneyEndpoints: SetupPanel
 
     private void OnChangeStartPoint(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetupJourneyPointType(SetupJourneyPointType.StartPoint);
         changeEndPointSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnChangeEndPoint(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetupJourneyPointType(SetupJourneyPointType.EndPoint);
         changeStartPointSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnResetAllPoint()
     {
-        Enviroment.Instance.PointManager.ResetAllJourneyPoint();
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        Enviroment.Instance.PointManager.ResetAllJourneyPoints();
     }
 
     private void OnChangeSetUpMode()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        bool isDemoMode = setUpsController.IsDemoCarMove();
+        bool isEnoughCarArrived = Enviroment.Instance.CarManager.IsEnoughCarArrived();
+        if (isDemoMode && !isEnoughCarArrived)
+        {
+            Debug.Log("[SetupJourneyEndpoints] OnChangeSetupMode | In demo mode");
+            PopupManager.Instance.OpenAlert(AlertPopup.ALERT_IN_DEMO_MODE);
+            return;
+        }
+
         setUpsController.ChangeSetupState(SetupState.SetupJourneyEndpoints);
-        Enviroment.Instance.PointManager.ResetAllJourneyPoint();
+        Enviroment.Instance.PointManager.ResetAllJourneyPoints();
+        Enviroment.Instance.CarManager.DestroyAllCarMovements();
     }
 
     public void OnCarNumberChange()

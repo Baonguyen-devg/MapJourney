@@ -44,11 +44,11 @@ public class SolidLineManager : MonoBehaviour
 
     private void CreateRemoveSolidLine()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
+        if (!SetUpsController.Instance.IsSetupSolidLines()) return;
         Debug.Log("[SolidLineManager] CreateRemoveSolidLine | Avaible to create/remove SolidLine");
 
         //Baodev: Only add/remove solidLine when game in remove solidLine mode
-        if (Enviroment.Instance.SetUpsController.SetupSolidLinePanel.IsRemoveSolidLineState()) DetectMouseRayToRemoveSolidLine();
+        if (SetUpsController.Instance.SetupSolidLinePanel.IsRemoveSolidLineState()) DetectMouseRayToRemoveSolidLine();
     }
     #endregion
 

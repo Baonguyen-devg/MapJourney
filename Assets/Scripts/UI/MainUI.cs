@@ -6,8 +6,11 @@ using UnityEngine.UI;
 
 public class MainUI : MonoBehaviour
 {
+    [Header("Buttons"), Space(6)]
     [SerializeField] private Button settingButton;
     [SerializeField] private Button changeCameraButton;
+
+    [Header("Other Components"), Space(6)]
     [SerializeField] private RectTransform clockRect;
     [SerializeField] private TextMeshProUGUI timeText;
 
@@ -18,7 +21,11 @@ public class MainUI : MonoBehaviour
     {
         if (!doCount) return;
         timeCount = timeCount + Time.deltaTime;
+        CalculateAndShowClock();
+    }
 
+    private void CalculateAndShowClock()
+    {
         int minutes = Mathf.FloorToInt(timeCount / 60);
         int seconds = Mathf.FloorToInt(timeCount % 60);
         int milliseconds = Mathf.FloorToInt((timeCount * 1000) % 1000);
@@ -27,14 +34,26 @@ public class MainUI : MonoBehaviour
 
     public void Awake()
     {
+        RegisterEvents();
+    }
+
+    private void RegisterEvents()
+    {
         changeCameraButton.onClick.AddListener(OnChangeCamera);
         CarManager.EnoughCarArrived += PauseCountTime;
+        settingButton.onClick.AddListener(OnSettingInGame);
     }
 
     public void OnDestroy()
     {
+        UnRegisterEvents();
+    }
+
+    private void UnRegisterEvents()
+    {
         changeCameraButton.onClick.RemoveListener(OnChangeCamera);
         CarManager.EnoughCarArrived -= PauseCountTime;
+        settingButton.onClick.RemoveListener(OnSettingInGame);
     }
 
     public void StartCountTime()
@@ -44,7 +63,18 @@ public class MainUI : MonoBehaviour
     }
 
     public void PauseCountTime() => doCount = false;
-    public void OnChangeCamera() => CameraManager.Instance.ChangeCamera();
     public void SetChangeCameraButtonStatus(bool isActive) => changeCameraButton.gameObject.SetActive(isActive);
     public void SetClockStatus(bool isActive) => clockRect.gameObject.SetActive(isActive);
+
+    public void OnChangeCamera() 
+    {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        CameraManager.Instance.ChangeCamera(); 
+    }
+
+    private void OnSettingInGame()
+    {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        PopupManager.Instance.OpenPopup<SettingInGamePopup>(PopupManager.PopupType.SettingInGame);
+    }
 }

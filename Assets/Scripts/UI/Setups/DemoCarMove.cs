@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,6 +28,15 @@ public class DemoCarMove : SetupPanel
 
     private void OnChangeSetUpMode()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        bool isEnoughJourneyPoint = Enviroment.Instance.PointManager.IsEnoughJourneyPoints();
+        if (!isEnoughJourneyPoint)
+        {
+            Debug.Log("[DemoCarMove] OnChangeSetupMode | Don't enough journey points");
+            PopupManager.Instance.OpenAlert(AlertPopup.ALERT_DO_NOT_ENOUGH_JOURNEY_POINT);
+            return;
+        }
+
         setUpsController.ChangeSetupState(SetupState.DemoCarMove);
         Enviroment.Instance.CarManager.DemoCarMove();
     }
