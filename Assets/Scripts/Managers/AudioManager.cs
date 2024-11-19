@@ -8,10 +8,11 @@ public class AudioManager : Singleton<AudioManager>
     public enum SoundType
     {
         //UI, background
-        Background = 0,
-        ButtonClick = 1,
-        Popup = 2,
-        Popdown = 3,
+        MainMenuBackground = 0,
+        GameplayBackground = 1,
+        ButtonClick = 2,
+        Popup = 3,
+        Popdown = 4,
     }
 
     [SerializeField] private List<AudioClip> audioClips = new List<AudioClip>();
@@ -33,13 +34,12 @@ public class AudioManager : Singleton<AudioManager>
     {
         base.Awake();
         LoadSettings();
+        ChangeMainMenuBackground();
         DontDestroyOnLoad(gameObject);
     }
 
-    public void Start()
-    {
-        PlayAudio(SoundType.Background);
-    }
+    public void ChangeGameplayBackground() => PlayAudio(SoundType.GameplayBackground);
+    public void ChangeMainMenuBackground() => PlayAudio(SoundType.MainMenuBackground);
 
     public void MuteBackgroundAudio(bool isMute)
     {
@@ -68,7 +68,7 @@ public class AudioManager : Singleton<AudioManager>
     {
         AudioClip clip = GetPopup(soundType);
 
-        if (soundType == SoundType.Background)
+        if (soundType == SoundType.MainMenuBackground || soundType == SoundType.GameplayBackground)
         {
             backgroundAudioSource.clip = clip;
             backgroundAudioSource.Play();

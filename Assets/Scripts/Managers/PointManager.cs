@@ -53,31 +53,31 @@ public class PointManager : MonoBehaviour
 
     private void AddRemovePoint()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupPoints()) return;
+        if (!SetUpsController.Instance.IsSetupPoints()) return;
         Debug.Log("[PointManager] AddRemovePoint | Avaible to create/remove point");
 
         //Baodev: Only add/remove point when game in add/remove point mode
-        if (Enviroment.Instance.SetUpsController.SetUpPointPanel.IsAddPointMode()) DetectMouseRayToAddPoint();
-        if (Enviroment.Instance.SetUpsController.SetUpPointPanel.IsRemovePointMode()) DetectMouseRayToRemovePoint();
+        if (SetUpsController.Instance.SetUpPointPanel.IsAddPointMode()) DetectMouseRayToAddPoint();
+        if (SetUpsController.Instance.SetUpPointPanel.IsRemovePointMode()) DetectMouseRayToRemovePoint();
     }
 
     private void SetJourneyPoints()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupJourneyEndpoints()) return;
+        if (!SetUpsController.Instance.IsSetupJourneyEndpoints()) return;
         Debug.Log("[PointManager] SetJourneyPoints | Avaible to set journey start/end point");
 
         //Baodev: Only set start/end point when game in set journey start/end point mode
-        if (Enviroment.Instance.SetUpsController.SetupJourneyEndpoints.IsSetStartPointMode()) DetectMouseRayToSetStartJourney();
-        if (Enviroment.Instance.SetUpsController.SetupJourneyEndpoints.IsSetEndPointMode()) DetectMouseRayToSetEndJourney();
+        if (SetUpsController.Instance.SetupJourneyEndpoints.IsSetStartPointMode()) DetectMouseRayToSetStartJourney();
+        if (SetUpsController.Instance.SetupJourneyEndpoints.IsSetEndPointMode()) DetectMouseRayToSetEndJourney();
     }
 
     private void SetupSolidLinePoints()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
+        if (!SetUpsController.Instance.IsSetupSolidLines()) return;
         Debug.Log("[PointManager] SetupSolidLinePoints | Avaible to create SolidLine");
 
         //Baodev: Only add/remove solidLine when game in add/remove solidLine mode
-        if (Enviroment.Instance.SetUpsController.SetupSolidLinePanel.IsAddSolidLineState()) DetectMouseRayToSetSolidLinePoints();
+        if (SetUpsController.Instance.SetupSolidLinePanel.IsAddSolidLineState()) DetectMouseRayToSetSolidLinePoints();
     }
     #endregion
 
@@ -178,7 +178,7 @@ public class PointManager : MonoBehaviour
 
     public void ResetSolidLinePoints()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupSolidLines()) return;
+        if (!SetUpsController.Instance.IsSetupSolidLines()) return;
         if (solidLineStartPoint != null) solidLineStartPoint.OnUnselected();
         if (solidLineEndPoint != null) solidLineEndPoint.OnUnselected();
         solidLineStartPoint = null;
@@ -241,9 +241,9 @@ public class PointManager : MonoBehaviour
         }
     }
 
-    public void ResetAllJourneyPoint()
+    public void ResetAllJourneyPoints()
     {
-        if (!Enviroment.Instance.SetUpsController.IsSetupJourneyEndpoints()) return;
+        if (!SetUpsController.Instance.IsSetupJourneyEndpoints()) return;
         if (startJourneyPoints.Count != 0)
         {
             foreach (Point point in startJourneyPoints)
@@ -293,6 +293,13 @@ public class PointManager : MonoBehaviour
         Vector3 mousePosition = InputManager.Instance.GetMousePosition();
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         return ray;
+    }
+
+    public bool IsEnoughJourneyPoints()
+    {
+        bool enoughStartPoint = (startJourneyPoints.Count == Enviroment.Instance.CarManager.CarNumber);
+        bool enoughEndPoint = (endJourneyPoint != null);
+        return (enoughEndPoint && enoughStartPoint);
     }
     #endregion
 }

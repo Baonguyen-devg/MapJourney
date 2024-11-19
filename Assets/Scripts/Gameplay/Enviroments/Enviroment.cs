@@ -16,10 +16,20 @@ public class Enviroment : Singleton<Enviroment>
     public CarManager CarManager => carManager;
 
     [Header("Other components:"), Space(6)]    
-    [SerializeField] private SetUpsController setUpsController;
     [SerializeField] private SplineComputer roadSplineComputer;
 
-    public SetUpsController SetUpsController => setUpsController;
+    protected override void Awake()
+    {
+        base.Awake();
+        DontDestroyOnLoad(this);
+    }
+
+    public void ResetGame()
+    {
+        pointManager.RemoveAllPoint();
+        solidLineManager.RemoveAllSolidLine();
+        carManager.DestroyAllCarMovements();
+    }
 
     [ContextMenu("Convert solidLine to spline")]
     public void ConvertLineToSpline()

@@ -904,3 +904,4 @@ MonoBehaviour:
   closePopupButton: {fileID: 3341082223425127809}
   board: {fileID: 1435680490532742303}
   backgroundImage: {fileID: 7128351231169989914}
+  contentText: {fileID: 6097085108545255736}

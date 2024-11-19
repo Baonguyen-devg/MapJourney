@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VFX;
 
 public class SettingPopup : BasePopup
 {
@@ -22,7 +19,7 @@ public class SettingPopup : BasePopup
         RegisterEvents();
     }
 
-    private void RegisterEvents()
+    protected virtual void RegisterEvents()
     {
         enableBackgroundMusicSwitcher.OnValueChanged += OnMuteBackgroundMusic;
         enableSFXMusicSwitcher.OnValueChanged += OnMuteEffectMusic;
@@ -36,7 +33,7 @@ public class SettingPopup : BasePopup
         UnRegisterEvents();
     }
 
-    private void UnRegisterEvents()
+    protected virtual void UnRegisterEvents()
     {
         enableBackgroundMusicSwitcher.OnValueChanged -= OnMuteBackgroundMusic;
         enableSFXMusicSwitcher.OnValueChanged -= OnMuteEffectMusic;
@@ -47,11 +44,13 @@ public class SettingPopup : BasePopup
 
     private void OnMuteBackgroundMusic(bool isMute)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         AudioManager.Instance.MuteBackgroundAudio(!isMute);
     }
 
     private void OnMuteEffectMusic(bool isMute)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         AudioManager.Instance.MuteEffectAudio(!isMute);
     }
 

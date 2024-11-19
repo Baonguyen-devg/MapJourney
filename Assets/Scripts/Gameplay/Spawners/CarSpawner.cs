@@ -1,10 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class CarSpawner : ObjectPooling<CarMoving, CarType>
+public class CarSpawner : ObjectPooling<CarMovement, CarType>
 {
-    protected override bool CheckMatchValue(CarType matchType, CarMoving component)
+    protected override bool CheckMatchValue(CarType matchType, CarMovement component)
     {
         return (component.CarType == matchType);
     }

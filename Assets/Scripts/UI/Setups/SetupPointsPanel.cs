@@ -1,5 +1,4 @@
 using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,23 +79,36 @@ public class SetupPointsPanel : SetupPanel
 
     private void OnChangeAddMode(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetUpPointsMode(SetUpPointsMode.AddPointMode);
         changeRemoveModeSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnChangeRemoveMode(bool isOn)
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         ChangeSetUpPointsMode(SetUpPointsMode.RemovePointMode);
         changeAddModeSwitcher.SetWithoutNotify(!isOn);
     }
 
     private void OnRemoveAllPoint()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
         Enviroment.Instance.PointManager.RemoveAllPoint();
     }
 
     private void OnChangeSetUpMode()
     {
+        AudioManager.Instance.PlayAudio(AudioManager.SoundType.ButtonClick);
+        bool isDemoMode = setUpsController.IsDemoCarMove();
+        bool isEnoughCarArrived = Enviroment.Instance.CarManager.IsEnoughCarArrived();
+        if (isDemoMode && !isEnoughCarArrived)
+        {
+            Debug.Log("[SetupPointsPanel] OnChangeSetupMode | In demo mode");
+            PopupManager.Instance.OpenAlert(AlertPopup.ALERT_IN_DEMO_MODE);
+            return;
+        }
+
         setUpsController.ChangeSetupState(SetupState.SetupPoints);
     }
 }

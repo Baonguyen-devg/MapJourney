@@ -1,12 +1,10 @@
 using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.VFX;
 
 public class BasePopup : MonoBehaviour
 {
+    [Header("Base component"), Space(6)]
     [SerializeField] protected PopupManager.PopupType popupType;
     [SerializeField] protected Button closePopupButton;
     [SerializeField] protected Transform board;
