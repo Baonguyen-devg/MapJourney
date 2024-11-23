@@ -149,7 +149,7 @@ public class PointManager : MonoBehaviour
     //Baodev: Set closestPoint for end point When the previous starting point is found
     private void SetSolidLineEndPoint(Point closestPoint)
     {
-        if (solidLineStartPoint != null)
+        if (solidLineStartPoint != null && closestPoint != solidLineStartPoint)
         {
             Debug.Log($"[PointManager] SetSolidLineEndPoint | solidLineEndPoint: {closestPoint}");
             solidLineEndPoint = closestPoint;
