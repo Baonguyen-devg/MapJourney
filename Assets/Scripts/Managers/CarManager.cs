@@ -76,7 +76,7 @@ public class CarManager : MonoBehaviour
         foreach (Point startPoint in startJourneyPoints)
         {
             Debug.Log($"[CarManager] DemoCarMove | From {startPoint} to {endJourneyPoint}");
-            List<Vector3> pathMovePoints = Enviroment.Instance.PathFindingManager.FindPathDijkstra(startPoint, endJourneyPoint);
+            List<Vector3> pathMovePoints = PathFinding.FindPathDijkstra(startPoint, endJourneyPoint);
 
             int carId = startJourneyPoints.IndexOf(startPoint);
             float totalDistance = TotalDistance(pathMovePoints);

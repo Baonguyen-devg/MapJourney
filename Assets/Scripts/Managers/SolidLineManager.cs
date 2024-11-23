@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -25,6 +24,7 @@ public class SolidLineManager : MonoBehaviour
     [SerializeField] private float offsetDistance = 0.4f;
 
     private Dictionary<SolidLine, List<SolidLine>> lineToBezierMap = new Dictionary<SolidLine, List<SolidLine>>();
+    private Dictionary<Vector3, List<SolidLine>> beziersAtPoint = new Dictionary<Vector3, List<SolidLine>>();
 
     #region initialization
     private void Awake() => RegisterEvents();
@@ -66,6 +66,7 @@ public class SolidLineManager : MonoBehaviour
 
             TryCreateSolidAndBezierLine(startPosition, endPosition);
             Enviroment.Instance.PointManager.SelectSolidLineEndPoint();
+            TrackAndDisactiveCenterLine();
         }
     }
 
@@ -78,18 +79,22 @@ public class SolidLineManager : MonoBehaviour
 
     public void CreateSolidAndBezeirLine(Vector3 startPoint, Vector3 endPoint)
     {
-        SolidLine solidLine = InitializeSolidLine(startPoint, endPoint);
+        SolidLine solidLine = CreateStraightSolidLine(startPoint, endPoint);
         foreach (SolidLine existingLine in solidLines)
         {
-            if (existingLine == solidLine || FindSharedPoint(existingLine, solidLine) == VECTOR3_INF) continue;
-            InitializeBezierLine(solidLine, existingLine);
+            Vector3 sharePoint = FindSharedPoint(existingLine, solidLine);
+            if (existingLine == solidLine || sharePoint == VECTOR3_INF) continue;
+            InitializeBezierLine(solidLine, existingLine, sharePoint);
         }
     }
 
-    private SolidLine InitializeSolidLine(Vector3 startPoint, Vector3 endPoint)
+    private SolidLine CreateStraightSolidLine(Vector3 startPoint, Vector3 endPoint)
     {
-        SolidLine solidLine = solidLineSpawner.Spawn(SolidLineType.Default);
-        solidLine.Init(startPoint, endPoint);
+        (Vector3 startMeshGenerate, Vector3 endMeshGenerate) = CalculateStraightPoints(startPoint, endPoint);
+        SolidLine solidLine = solidLineSpawner.Spawn(SolidLineType.Straight);
+        solidLine.CommonlyInit(startPoint, endPoint);
+        solidLine.MeshGenerateInit(startMeshGenerate, endMeshGenerate);
+        solidLine.GenerateStraightRoad();
         solidLines.Add(solidLine);
         return solidLine;
     }
@@ -135,30 +140,56 @@ public class SolidLineManager : MonoBehaviour
     #endregion
 
     #region add/remove bezierline methods
-    public void InitializeBezierLine(SolidLine line1, SolidLine line2)
+    public (Vector3 startPoint, Vector3 endPoint) InitializeBezierLine(SolidLine line1, SolidLine line2, Vector3 sharedPoint)
     {
-        Vector3 sharedPoint = FindSharedPoint(line1, line2);
         (Vector3 startPoint, Vector3 endPoint) = CalculateControlPoints(line1, line2, sharedPoint);
         SolidLine bezierSolidLine = CreateBezierSolidLine(startPoint, endPoint, sharedPoint);
-
         AddBezierLineToMap(line1, line2, bezierSolidLine);
+        AddBazierAtPoint(sharedPoint, bezierSolidLine);
+        return (startPoint, endPoint);
     }
 
     private SolidLine CreateBezierSolidLine(Vector3 startPoint, Vector3 endPoint, Vector3 sharedPoint)
     {
-        SolidLine bezierSolidLine = SolidLineSpawner.Spawn(SolidLineType.BezierSolidLine);
-        bezierSolidLine.LineRenderer.positionCount = segmentCount + 1;
-        bezierSolidLine.SetPosition(startPoint, endPoint);
-        bezierSolidLine.SetLineWidth(0.3f);
+        SolidLine bezierSolidLine = SolidLineSpawner.Spawn(SolidLineType.Bezier);
+        bezierSolidLine.CommonlyInit(startPoint, endPoint);
 
-        for (int i = 0; i <= segmentCount; i++)
+        List<Vector3> bezierPoints = new List<Vector3>();
+        float totalLength = EstimateBezierCurveLength(startPoint, sharedPoint, endPoint, segmentCount);
+        int pointCount = Mathf.Max(2, Mathf.CeilToInt(totalLength / bezierSolidLine.Spacing));
+
+        for (int i = 0; i <= pointCount; i++)
         {
-            float interpolationFactor = i / (float)segmentCount;
+            float interpolationFactor = i / (float)pointCount;
             Vector3 bezierPoint = CalculateQuadraticBezierPoint(interpolationFactor, startPoint, sharedPoint, endPoint);
-            bezierSolidLine.LineRenderer.SetPosition(i, bezierPoint);
+            bezierPoints.Add(bezierPoint + new Vector3(0, 0.1f, 0));
         }
 
+        Vector3 header = sharedPoint - startPoint;
+        Vector3 footer = endPoint - sharedPoint;
+        bezierSolidLine.GenerateBezierRoad(bezierPoints, header, footer);
         return bezierSolidLine;
+    }
+
+    private float EstimateBezierCurveLength(Vector3 point0, Vector3 point1, Vector3 point2, int segmentCount)
+    {
+        float length = 0f;
+        Vector3 previousPoint = point0;
+        for (int i = 1; i <= segmentCount; i++)
+        {
+            float t = i / (float)segmentCount;
+            Vector3 currentPoint = CalculateQuadraticBezierPoint(t, point0, point1, point2);
+            length += Vector3.Distance(previousPoint, currentPoint);
+            previousPoint = currentPoint;
+        }
+        return length;
+    }
+
+    private Vector3 CalculateQuadraticBezierPoint(float interpolationFactor, Vector3 point0, Vector3 point1, Vector3 point2)
+    {
+        float u = 1 - interpolationFactor;
+        return u * u * point0 + 2 * u * interpolationFactor * point1
+             + interpolationFactor * interpolationFactor * point2;
     }
 
     private void AddBezierLineToMap(SolidLine line1, SolidLine line2, SolidLine bezierSolidLine)
@@ -185,6 +216,8 @@ public class SolidLineManager : MonoBehaviour
             {
                 solidLineSpawner.Despawn(bezierLine);
                 bezierLines.Remove(bezierLine);
+                RemoveBezierAtPoint(solidLineToRemove.StartPosition, bezierLine);
+                RemoveBezierAtPoint(solidLineToRemove.EndPosition, bezierLine);
 
                 foreach (var entry in lineToBezierMap)
                 {
@@ -192,6 +225,41 @@ public class SolidLineManager : MonoBehaviour
                 }
             }
             lineToBezierMap.Remove(solidLineToRemove);
+        }
+    }
+
+    private void AddBazierAtPoint(Vector3 point, SolidLine bezierSolidLine)
+    {
+        if (!beziersAtPoint.ContainsKey(point))
+        {
+            beziersAtPoint[point] = new List<SolidLine>();
+        }
+        beziersAtPoint[point].Add(bezierSolidLine);
+    }
+
+    private void RemoveBezierAtPoint(Vector3 point, SolidLine bezierSolidLine)
+    {
+        if (beziersAtPoint.ContainsKey(point))
+        {
+            var solidLineList = beziersAtPoint[point];
+            solidLineList.Remove(bezierSolidLine);
+
+            if (solidLineList.Count == 0)
+            {
+                beziersAtPoint.Remove(point);
+            }
+        }
+    }
+
+    private void TrackAndDisactiveCenterLine()
+    {
+        foreach (var keyValuePair in beziersAtPoint)
+        {
+            if (keyValuePair.Value.Count < 2) continue;
+            foreach (var solidLine in keyValuePair.Value)
+            {
+                solidLine.SetCenterLineActive(false);
+            }
         }
     }
 
@@ -228,11 +296,48 @@ public class SolidLineManager : MonoBehaviour
     #region Other methods
     private (Vector3 startPoint, Vector3 endPoint) CalculateControlPoints(SolidLine line1, SolidLine line2, Vector3 sharedPoint)
     {
-        Vector3 startPointOriginal = (line1.StartPosition == sharedPoint) ? line1.EndPosition : line1.StartPosition;
-        Vector3 endPointOriginal = (line2.StartPosition == sharedPoint) ? line2.EndPosition : line2.StartPosition;
+        Vector3 startPointOriginal = GetOriginalPoint(line1, sharedPoint);
+        Vector3 endPointOriginal = GetOriginalPoint(line2, sharedPoint);
 
-        Vector3 startPoint = sharedPoint - (sharedPoint - startPointOriginal) * offsetDistance;
-        Vector3 endPoint = sharedPoint + (endPointOriginal - sharedPoint) * offsetDistance;
+        Vector3 directionStart = (sharedPoint - startPointOriginal).normalized;
+        Vector3 directionEnd = (endPointOriginal - sharedPoint).normalized;
+
+        Vector3 fixedLengthVectorStart = directionStart * 5f;
+        Vector3 fixedLengthVectorEnd = directionEnd * 5f;
+
+        Vector3 offsetVectorStart = (sharedPoint - startPointOriginal) * offsetDistance;
+        Vector3 offsetVectorEnd = (endPointOriginal - sharedPoint) * offsetDistance;
+
+        Vector3 resultStart = GetShorterVector(offsetVectorStart, fixedLengthVectorStart);
+        Vector3 resultEnd = GetShorterVector(offsetVectorEnd, fixedLengthVectorEnd);
+
+        Vector3 startPoint = sharedPoint - resultStart;
+        Vector3 endPoint = sharedPoint + resultEnd;
+        return (startPoint, endPoint);
+    }
+
+    private Vector3 GetOriginalPoint(SolidLine line, Vector3 sharedPoint)
+    {
+        return (line.StartPosition == sharedPoint) ? line.EndPosition : line.StartPosition;
+    }
+
+    private Vector3 GetShorterVector(Vector3 vector1, Vector3 vector2)
+    {
+        return (vector1.magnitude < vector2.magnitude) ? vector1 : vector2;
+    }
+
+    private (Vector3 startPoint, Vector3 endPoint) CalculateStraightPoints(Vector3 point1, Vector3 point2)
+    {
+        Vector3 directionStart = (point2 - point1).normalized;
+        Vector3 fixedLengthVectorStart = directionStart * 5f;
+        Vector3 minusStart = (point2 - point1) * offsetDistance;
+
+        float lengthMinusStart = minusStart.magnitude;
+        float lengthFixedStart = fixedLengthVectorStart.magnitude;
+        Vector3 resultStart = (lengthMinusStart < lengthFixedStart) ? minusStart : fixedLengthVectorStart;
+
+        Vector3 startPoint = point1 + resultStart;
+        Vector3 endPoint = point2 - resultStart;
         return (startPoint, endPoint);
     }
 
@@ -249,13 +354,6 @@ public class SolidLineManager : MonoBehaviour
             return line1.EndPosition;
         }
         return VECTOR3_INF;
-    }
-
-    private Vector3 CalculateQuadraticBezierPoint(float interpolationFactor, Vector3 point0, Vector3 point1, Vector3 point2)
-    {
-        float u = 1 - interpolationFactor;
-        return u * u * point0 + 2 * u * interpolationFactor * point1
-             + interpolationFactor * interpolationFactor * point2;
     }
 
     private bool TryGetClosestSolidLine(out SolidLine closetSolidLine)
@@ -277,7 +375,7 @@ public class SolidLineManager : MonoBehaviour
         foreach (SolidLine solidLine in solidLines)
         {
             float distance = DistancePointToLineSegment(hitPosition, solidLine.StartPosition, solidLine.EndPosition);
-            if (distance < minDistance && distance < 0.1f)
+            if (distance < minDistance && distance < 1f)
             {
                 minDistance = distance;
                 closestLine = solidLine;
